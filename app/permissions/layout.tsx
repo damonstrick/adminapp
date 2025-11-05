@@ -30,7 +30,7 @@ export default function PermissionsLayout({
       <TopNavigation />
       <Banner />
       <LeftNavigation />
-      <div className="ml-[64px] fixed bottom-0 left-0 right-0 overflow-y-auto" style={{ top: '96px' }}>
+      <div className="ml-[64px] fixed bottom-0 left-0 right-0 overflow-y-auto" style={{ top: '96px', scrollbarGutter: 'stable' }}>
         <div className="flex justify-center px-4 pb-8 pt-[65px] min-h-full" style={{ marginRight: isPanelOpen ? '400px' : '0' }}>
           <div className="flex gap-[40px] items-start w-[890px]">
             <div className="sticky self-start" style={{ top: '65px' }}>
