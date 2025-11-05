@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Noise from './Noise';
 import AddMemberModal from './AddMemberModal';
 import CreateGroupModal from './CreateGroupModal';
 
@@ -133,17 +132,6 @@ function QuickActionCard({ icon, title, description, circleColor, onClick }: { i
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
-        {/* Noise overlay - behind everything */}
-        <div className="absolute inset-0 overflow-hidden rounded-[10px]">
-          <Noise
-            patternSize={250}
-            patternScaleX={1}
-            patternScaleY={1}
-            patternRefreshInterval={2}
-            patternAlpha={4.375}
-            blendMode="color-burn"
-          />
-        </div>
       {/* Circle that follows cursor */}
       <div 
         className="absolute rounded-full pointer-events-none z-10"
