@@ -18,7 +18,8 @@ export default function PermissionsLayout({
   
   // Close panel when navigating away from pages that use it
   useEffect(() => {
-    const isProductSettingsPage = pathname?.includes('/analyze') || pathname?.includes('/clear-contracts');
+    // Check if we're on a product settings page (analyze or clear-contracts)
+    const isProductSettingsPage = pathname?.match(/\/(analyze|clear-contracts)$/);
     if (!isProductSettingsPage && isPanelOpen) {
       setIsPanelOpen(false);
     }
