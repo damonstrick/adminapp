@@ -15,3 +15,4 @@ export default function EntityProfilePage({ params }: { params: { id: string } }
   );
 }
 
+

@@ -19,3 +19,4 @@ const ShinyText = ({ text, disabled = false, speed = 5, className = '' }: ShinyT
 
 export default ShinyText;
 
+

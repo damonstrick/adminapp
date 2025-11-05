@@ -51,3 +51,4 @@ The permissions overview page is based on the Figma design and includes:
 - Product usage progress bars
 - Recent activity feed
 
+

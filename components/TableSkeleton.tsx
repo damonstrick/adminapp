@@ -68,3 +68,4 @@ export default function TableSkeleton({ columns, rows = 5, hasSearch = true, has
   );
 }
 
+
