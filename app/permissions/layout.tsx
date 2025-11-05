@@ -1,5 +1,7 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import TopNavigation from '@/components/TopNavigation';
 import LeftNavigation from '@/components/LeftNavigation';
 import SecondaryNav from '@/components/SecondaryNav';
@@ -11,7 +13,16 @@ export default function PermissionsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isPanelOpen } = usePermissionsPanel();
+  const { isPanelOpen, setIsPanelOpen } = usePermissionsPanel();
+  const pathname = usePathname();
+  
+  // Close panel when navigating away from pages that use it
+  useEffect(() => {
+    const isProductSettingsPage = pathname?.includes('/analyze') || pathname?.includes('/clear-contracts');
+    if (!isProductSettingsPage && isPanelOpen) {
+      setIsPanelOpen(false);
+    }
+  }, [pathname, isPanelOpen, setIsPanelOpen]);
   
   return (
     <div className="bg-surface-bg-white relative size-full min-h-screen">
