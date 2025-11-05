@@ -140,7 +140,7 @@ function QuickActionCard({ icon, title, description, circleColor, onClick }: { i
             patternScaleX={1}
             patternScaleY={1}
             patternRefreshInterval={2}
-            patternAlpha={8.75}
+            patternAlpha={4.375}
             blendMode="color-burn"
           />
         </div>
