@@ -1,0 +1,31 @@
+{
+  "name": "adminapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^24.10.0",
+    "@types/react": "^18.3.26",
+    "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.4.21",
+    "next": "^14.2.33",
+    "ogl": "^1.0.11",
+    "postcss": "^8.5.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^4.1.16",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.16"
+  }
+}
