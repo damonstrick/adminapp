@@ -5,10 +5,17 @@ import PageHeader from '@/components/PageHeader';
 import MembersContent, { TOTAL_MEMBERS } from '@/components/MembersContent';
 import AddMemberModal from '@/components/AddMemberModal';
 import TableSkeleton from '@/components/TableSkeleton';
+import { usePermissionsPanel } from '@/components/PermissionsPanelContext';
 
 export default function MembersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { setIsPanelOpen } = usePermissionsPanel();
+
+  useEffect(() => {
+    // Close permissions panel on mount
+    setIsPanelOpen(false);
+  }, [setIsPanelOpen]);
 
   useEffect(() => {
     // Simulate loading

@@ -5,10 +5,17 @@ import PageHeader from '@/components/PageHeader';
 import AnalyzeContent, { TOTAL_ENTITIES } from '@/components/AnalyzeContent';
 import CreateEntityModal from '@/components/CreateEntityModal';
 import TableSkeleton from '@/components/TableSkeleton';
+import { usePermissionsPanel } from '@/components/PermissionsPanelContext';
 
 export default function EntitiesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { setIsPanelOpen } = usePermissionsPanel();
+
+  useEffect(() => {
+    // Close permissions panel on mount
+    setIsPanelOpen(false);
+  }, [setIsPanelOpen]);
 
   useEffect(() => {
     // Simulate loading

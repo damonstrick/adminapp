@@ -5,10 +5,17 @@ import PageHeader from '@/components/PageHeader';
 import GroupsContent, { TOTAL_GROUPS } from '@/components/GroupsContent';
 import CreateGroupModal from '@/components/CreateGroupModal';
 import TableSkeleton from '@/components/TableSkeleton';
+import { usePermissionsPanel } from '@/components/PermissionsPanelContext';
 
 export default function GroupsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { setIsPanelOpen } = usePermissionsPanel();
+
+  useEffect(() => {
+    // Close permissions panel on mount
+    setIsPanelOpen(false);
+  }, [setIsPanelOpen]);
 
   useEffect(() => {
     // Simulate loading
