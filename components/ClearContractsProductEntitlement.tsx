@@ -825,116 +825,171 @@ export default function ClearContractsProductEntitlement() {
           </button>
         </div>
         {customizeFeaturesOpen && (
-          <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-            {/* AskTQ Contract */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Contract</p>
+          <div className="flex flex-col gap-8 items-start relative shrink-0 w-full">
+            {/* AI & Intelligence */}
+            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                  AI & Intelligence
+                </p>
+                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
+                  AI-powered features and intelligent document processing
+                </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={askTqContract} onChange={(e) => setAskTqContract(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+                {/* AskTQ Contract */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Contract</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={askTqContract} onChange={(e) => setAskTqContract(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+                {/* AskTQ Payer Policy */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Payer Policy</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={askTqPayerPolicy} onChange={(e) => setAskTqPayerPolicy(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+                {/* AI Context */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">AI Context</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={aiContext} onChange={(e) => setAiContext(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+                {/* Neaural Indexing */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">Neaural Indexing</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={neauralIndexing} onChange={(e) => setNeauralIndexing(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+              </div>
             </div>
-            {/* AskTQ Payer Policy */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Payer Policy</p>
+
+            {/* Document Management */}
+            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                  Document Management
+                </p>
+                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
+                  Document viewing, indexing, and processing capabilities
+                </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={askTqPayerPolicy} onChange={(e) => setAskTqPayerPolicy(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+                {/* Document Viewer */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">Document Viewer</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={documentViewer} onChange={(e) => setDocumentViewer(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+                {/* Auto Indexing */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">Auto Indexing</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={autoIndexing} onChange={(e) => setAutoIndexing(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+                {/* Auto Extract Rate Tables */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">Auto Extract Rate Tables</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={autoExtractRateTables} onChange={(e) => setAutoExtractRateTables(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+                {/* Redacto */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">Redacto</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={redacto} onChange={(e) => setRedacto(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+              </div>
             </div>
-            {/* Document Viewer */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Document Viewer</p>
+
+            {/* Analytics & Reporting */}
+            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                  Analytics & Reporting
+                </p>
+                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
+                  Reporting and data analysis features
+                </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={documentViewer} onChange={(e) => setDocumentViewer(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+                {/* Rate Summary */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">Rate Summary</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={rateSummary} onChange={(e) => setRateSummary(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+                {/* Claims Data Schema */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">Claims Data Schema</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={claimsDataSchema} onChange={(e) => setClaimsDataSchema(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
+              </div>
             </div>
-            {/* Rate Summary */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Rate Summary</p>
+
+            {/* Workflow */}
+            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                  Workflow
+                </p>
+                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
+                  Approval and workflow automation features
+                </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={rateSummary} onChange={(e) => setRateSummary(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
-            </div>
-            {/* Neaural Indexing */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Neaural Indexing</p>
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+                {/* CC Approval Workflow */}
+                <div className="flex items-start justify-between relative shrink-0 w-full">
+                  <div className="flex-1">
+                    <p className="font-medium text-xs text-[#121313] mb-1">CC Approval Workflow</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={ccApprovalWorkflow} onChange={(e) => setCcApprovalWorkflow(e.target.checked)} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                  </label>
+                </div>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={neauralIndexing} onChange={(e) => setNeauralIndexing(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
-            </div>
-            {/* Auto Indexing */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Auto Indexing</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={autoIndexing} onChange={(e) => setAutoIndexing(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
-            </div>
-            {/* Auto Extract Rate Tables */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Auto Extract Rate Tables</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={autoExtractRateTables} onChange={(e) => setAutoExtractRateTables(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
-            </div>
-            {/* AI Context */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">AI Context</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={aiContext} onChange={(e) => setAiContext(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
-            </div>
-            {/* Redacto */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Redacto</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={redacto} onChange={(e) => setRedacto(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
-            </div>
-            {/* CC Approval Workflow */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">CC Approval Workflow</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={ccApprovalWorkflow} onChange={(e) => setCcApprovalWorkflow(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
-            </div>
-            {/* Claims Data Schema */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Claims Data Schema</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={claimsDataSchema} onChange={(e) => setClaimsDataSchema(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
             </div>
           </div>
         )}
