@@ -24,12 +24,28 @@ export default function ClearContractsProductEntitlement() {
   const [preferencesOpen, setPreferencesOpen] = useState(true);
   const [seatConfigOpen, setSeatConfigOpen] = useState(true);
   const [dataConfigOpen, setDataConfigOpen] = useState(true);
-  const [seatMode, setSeatMode] = useState<'unlimited' | 'custom'>('unlimited');
   
-  // Initialize with empty state for data configuration
-  const [conditions, setConditions] = useState<Condition[]>([]);
-  const [hospitalRatesConditions, setHospitalRatesConditions] = useState<Condition[]>([]);
-  const [payerRatesConditions, setPayerRatesConditions] = useState<Condition[]>([]);
+  // Seat Configuration state
+  const [initialSeatConfig, setInitialSeatConfig] = useState({
+    seatMode: 'unlimited' as 'unlimited' | 'custom',
+    numberOfSeats: '',
+  });
+  const [seatMode, setSeatMode] = useState<'unlimited' | 'custom'>(initialSeatConfig.seatMode);
+  const [numberOfSeats, setNumberOfSeats] = useState(initialSeatConfig.numberOfSeats);
+  
+  // Data Configuration state - Initialize with empty state
+  const [initialDataConfig, setInitialDataConfig] = useState<{
+    conditions: Condition[];
+    hospitalRatesConditions: Condition[];
+    payerRatesConditions: Condition[];
+  }>({
+    conditions: [],
+    hospitalRatesConditions: [],
+    payerRatesConditions: [],
+  });
+  const [conditions, setConditions] = useState<Condition[]>(initialDataConfig.conditions);
+  const [hospitalRatesConditions, setHospitalRatesConditions] = useState<Condition[]>(initialDataConfig.hospitalRatesConditions);
+  const [payerRatesConditions, setPayerRatesConditions] = useState<Condition[]>(initialDataConfig.payerRatesConditions);
   
   // Popover states
   const [addScopePopover, setAddScopePopover] = useState<{ conditionId: string | null; section: 'clear' | 'hospital' | 'payer'; open: boolean } | null>(null);
@@ -592,7 +608,22 @@ export default function ClearContractsProductEntitlement() {
     renewalsMs2,
   }) !== JSON.stringify(initialPreferences);
   
-  const dirtySectionsCount = [isCustomizeFeaturesDirty, isPreferencesDirty].filter(Boolean).length;
+  const isSeatConfigDirty = JSON.stringify({
+    seatMode,
+    numberOfSeats,
+  }) !== JSON.stringify(initialSeatConfig);
+  
+  const isDataConfigDirty = JSON.stringify({
+    conditions: conditions.sort((a, b) => a.id.localeCompare(b.id)),
+    hospitalRatesConditions: hospitalRatesConditions.sort((a, b) => a.id.localeCompare(b.id)),
+    payerRatesConditions: payerRatesConditions.sort((a, b) => a.id.localeCompare(b.id)),
+  }) !== JSON.stringify({
+    conditions: initialDataConfig.conditions.sort((a, b) => a.id.localeCompare(b.id)),
+    hospitalRatesConditions: initialDataConfig.hospitalRatesConditions.sort((a, b) => a.id.localeCompare(b.id)),
+    payerRatesConditions: initialDataConfig.payerRatesConditions.sort((a, b) => a.id.localeCompare(b.id)),
+  });
+  
+  const dirtySectionsCount = [isCustomizeFeaturesDirty, isSeatConfigDirty, isDataConfigDirty, isPreferencesDirty].filter(Boolean).length;
   
   const handleSaveCustomizeFeatures = () => {
     setInitialCustomizeFeatures({
@@ -625,6 +656,42 @@ export default function ClearContractsProductEntitlement() {
     setFadingOut(null);
     setTimeout(() => {
       setFadingOut('customizeFeatures');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+  
+  const handleSaveSeatConfig = () => {
+    setInitialSeatConfig({
+      seatMode,
+      numberOfSeats,
+    });
+    console.log('Saving seat configuration:', {
+      seatMode,
+      numberOfSeats,
+    });
+    setSavedSection('seatConfig');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('seatConfig');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+  
+  const handleSaveDataConfig = () => {
+    setInitialDataConfig({
+      conditions: [...conditions],
+      hospitalRatesConditions: [...hospitalRatesConditions],
+      payerRatesConditions: [...payerRatesConditions],
+    });
+    console.log('Saving data configuration:', {
+      conditions,
+      hospitalRatesConditions,
+      payerRatesConditions,
+    });
+    setSavedSection('dataConfig');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('dataConfig');
       setTimeout(() => setSavedSection(null), 300);
     }, 1700);
   };
@@ -662,9 +729,13 @@ export default function ClearContractsProductEntitlement() {
     // Track which sections were dirty before saving
     const sectionsToSave: string[] = [];
     if (isCustomizeFeaturesDirty) sectionsToSave.push('customizeFeatures');
+    if (isSeatConfigDirty) sectionsToSave.push('seatConfig');
+    if (isDataConfigDirty) sectionsToSave.push('dataConfig');
     if (isPreferencesDirty) sectionsToSave.push('preferences');
     
     handleSaveCustomizeFeatures();
+    handleSaveSeatConfig();
+    handleSaveDataConfig();
     handleSavePreferences();
     
     setSavedSection('all');
@@ -876,23 +947,51 @@ export default function ClearContractsProductEntitlement() {
 
       {/* Seat Configuration Section */}
       <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setSeatConfigOpen(!seatConfigOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Seat Configuration</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${seatConfigOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="w-full flex items-center gap-2 mb-4 h-6">
+          <button
+            onClick={() => setSeatConfigOpen(!seatConfigOpen)}
+            className="flex items-center gap-2 flex-1 h-6"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <p className="font-semibold text-sm text-[#121313]">Seat Configuration</p>
+            {isSeatConfigDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+            {isSeatConfigDirty && savedSection !== 'seatConfig' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveSeatConfig();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'seatConfig' || (savedSection === 'all' && savedSectionsFromAll.includes('seatConfig'))) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'seatConfig' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setSeatConfigOpen(!seatConfigOpen)}
+            className="flex items-center h-6"
+          >
+            <svg
+              className={`w-5 h-5 text-[#121313] transition-transform ${seatConfigOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
         {seatConfigOpen && (
           <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
             {/* Toggle Buttons */}
@@ -925,6 +1024,8 @@ export default function ClearContractsProductEntitlement() {
                 <label className="block text-xs font-medium text-[#121313] mb-2">Number of Seats</label>
                 <input
                   type="number"
+                  value={numberOfSeats}
+                  onChange={(e) => setNumberOfSeats(e.target.value)}
                   placeholder="Hint Label"
                   className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
                 />
@@ -981,23 +1082,51 @@ export default function ClearContractsProductEntitlement() {
 
       {/* Data Configuration Section */}
       <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setDataConfigOpen(!dataConfigOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${dataConfigOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="w-full flex items-center gap-2 mb-4 h-6">
+          <button
+            onClick={() => setDataConfigOpen(!dataConfigOpen)}
+            className="flex items-center gap-2 flex-1 h-6"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+            </svg>
+            <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
+            {isDataConfigDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+            {isDataConfigDirty && savedSection !== 'dataConfig' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveDataConfig();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'dataConfig' || (savedSection === 'all' && savedSectionsFromAll.includes('dataConfig'))) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'dataConfig' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setDataConfigOpen(!dataConfigOpen)}
+            className="flex items-center h-6"
+          >
+            <svg
+              className={`w-5 h-5 text-[#121313] transition-transform ${dataConfigOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
         {dataConfigOpen && (
           <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
             {/* Clear Rates */}
