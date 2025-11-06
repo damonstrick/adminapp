@@ -896,38 +896,40 @@ export default function ClearContractsProductEntitlement() {
         {seatConfigOpen && (
           <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
             {/* Toggle Buttons */}
-            <div className="flex gap-2 items-start relative shrink-0">
+            <div className="flex gap-2 h-8 items-start relative shrink-0 w-full">
               <button
                 onClick={() => setSeatMode('unlimited')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                className={`flex-1 flex items-center justify-center h-8 px-3 py-2 rounded text-xs font-medium transition-colors ${
                   seatMode === 'unlimited'
                     ? 'bg-[#16696d] text-white'
-                    : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
+                    : 'bg-white border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
                 }`}
               >
                 Unlimited
               </button>
               <button
                 onClick={() => setSeatMode('custom')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                className={`flex-1 flex items-center justify-center h-8 px-3 py-2 rounded text-xs font-medium transition-colors ${
                   seatMode === 'custom'
                     ? 'bg-[#16696d] text-white'
-                    : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
+                    : 'bg-white border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
                 }`}
               >
                 Custom
               </button>
             </div>
 
-            {/* Number of Seats Input */}
-            <div className="w-full">
-              <label className="block text-xs font-medium text-[#121313] mb-2">Number of Seats</label>
-              <input
-                type="number"
-                placeholder="Hint Label"
-                className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
-              />
-            </div>
+            {/* Number of Seats Input - Only show when Custom is selected */}
+            {seatMode === 'custom' && (
+              <div className="w-full">
+                <label className="block text-xs font-medium text-[#121313] mb-2">Number of Seats</label>
+                <input
+                  type="number"
+                  placeholder="Hint Label"
+                  className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
+                />
+              </div>
+            )}
 
             {/* Seat Usage */}
             <div className="bg-white border border-gray-200 rounded-[10px] p-4 w-full">
