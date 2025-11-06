@@ -266,16 +266,6 @@ export default function ClearContractsProductEntitlement() {
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
-            {/* AskTQ Contract */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Contract</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={askTqContract} onChange={(e) => setAskTqContract(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
-            </div>
             {/* AskTQ Payer Policy */}
             <div className="flex items-start justify-between relative shrink-0 w-full">
               <div className="flex-1">
