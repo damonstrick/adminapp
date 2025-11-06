@@ -11,7 +11,7 @@ interface ProductItem {
 }
 
 const products: ProductItem[] = [
-  { icon: 'pen-line', title: 'Clear Contracts', activeMembers: 142, groups: 2 },
+  { icon: 'pen-line', title: 'Clear Contracts', activeMembers: 142, groups: 2, configureHref: '/permissions/products/clear-contracts' },
   { icon: 'chart-pie', title: 'Analyze', activeMembers: 142, groups: 2, configureHref: '/permissions/products/analyze' },
 ];
 
