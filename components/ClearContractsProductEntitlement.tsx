@@ -8,6 +8,33 @@ export default function ClearContractsProductEntitlement() {
   const [customizeFeaturesOpen, setCustomizeFeaturesOpen] = useState(true);
   const [preferencesOpen, setPreferencesOpen] = useState(true);
   
+  // Customize Features state
+  const [initialCustomizeFeatures, setInitialCustomizeFeatures] = useState({
+    askTqContract: false,
+    askTqPayerPolicy: false,
+    documentViewer: false,
+    rateSummary: false,
+    neauralIndexing: false,
+    autoIndexing: false,
+    autoExtractRateTables: false,
+    aiContext: false,
+    redacto: false,
+    ccApprovalWorkflow: false,
+    claimsDataSchema: false,
+  });
+  
+  const [askTqContract, setAskTqContract] = useState(initialCustomizeFeatures.askTqContract);
+  const [askTqPayerPolicy, setAskTqPayerPolicy] = useState(initialCustomizeFeatures.askTqPayerPolicy);
+  const [documentViewer, setDocumentViewer] = useState(initialCustomizeFeatures.documentViewer);
+  const [rateSummary, setRateSummary] = useState(initialCustomizeFeatures.rateSummary);
+  const [neauralIndexing, setNeauralIndexing] = useState(initialCustomizeFeatures.neauralIndexing);
+  const [autoIndexing, setAutoIndexing] = useState(initialCustomizeFeatures.autoIndexing);
+  const [autoExtractRateTables, setAutoExtractRateTables] = useState(initialCustomizeFeatures.autoExtractRateTables);
+  const [aiContext, setAiContext] = useState(initialCustomizeFeatures.aiContext);
+  const [redacto, setRedacto] = useState(initialCustomizeFeatures.redacto);
+  const [ccApprovalWorkflow, setCcApprovalWorkflow] = useState(initialCustomizeFeatures.ccApprovalWorkflow);
+  const [claimsDataSchema, setClaimsDataSchema] = useState(initialCustomizeFeatures.claimsDataSchema);
+  
   // Preferences state
   const [initialPreferences, setInitialPreferences] = useState({
     notifyOnDocUpload: true,
@@ -32,9 +59,24 @@ export default function ClearContractsProductEntitlement() {
   
   // Track which sections just saved
   const [savedSection, setSavedSection] = useState<string | null>(null);
+  const [savedSectionsFromAll, setSavedSectionsFromAll] = useState<string[]>([]);
   const [fadingOut, setFadingOut] = useState<string | null>(null);
   
   // Dirty state tracking
+  const isCustomizeFeaturesDirty = JSON.stringify({
+    askTqContract,
+    askTqPayerPolicy,
+    documentViewer,
+    rateSummary,
+    neauralIndexing,
+    autoIndexing,
+    autoExtractRateTables,
+    aiContext,
+    redacto,
+    ccApprovalWorkflow,
+    claimsDataSchema,
+  }) !== JSON.stringify(initialCustomizeFeatures);
+  
   const isPreferencesDirty = JSON.stringify({
     notifyOnDocUpload,
     enableRenewalEmails,
@@ -46,8 +88,55 @@ export default function ClearContractsProductEntitlement() {
     renewalsMs2,
   }) !== JSON.stringify(initialPreferences);
   
+  const dirtySectionsCount = [isCustomizeFeaturesDirty, isPreferencesDirty].filter(Boolean).length;
+  
+  const handleSaveCustomizeFeatures = () => {
+    setInitialCustomizeFeatures({
+      askTqContract,
+      askTqPayerPolicy,
+      documentViewer,
+      rateSummary,
+      neauralIndexing,
+      autoIndexing,
+      autoExtractRateTables,
+      aiContext,
+      redacto,
+      ccApprovalWorkflow,
+      claimsDataSchema,
+    });
+    console.log('Saving customize features:', {
+      askTqContract,
+      askTqPayerPolicy,
+      documentViewer,
+      rateSummary,
+      neauralIndexing,
+      autoIndexing,
+      autoExtractRateTables,
+      aiContext,
+      redacto,
+      ccApprovalWorkflow,
+      claimsDataSchema,
+    });
+    setSavedSection('customizeFeatures');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('customizeFeatures');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+  
   const handleSavePreferences = () => {
     setInitialPreferences({
+      notifyOnDocUpload,
+      enableRenewalEmails,
+      enableFolderView,
+      rateSummaryCustomer,
+      enableDocumentHierarchy,
+      enableIntakeStatuses,
+      enableRenewalDates,
+      renewalsMs2,
+    });
+    console.log('Saving preferences:', {
       notifyOnDocUpload,
       enableRenewalEmails,
       enableFolderView,
@@ -61,11 +150,29 @@ export default function ClearContractsProductEntitlement() {
     setFadingOut(null);
     setTimeout(() => {
       setFadingOut('preferences');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+  
+  const handleSaveAll = () => {
+    // Track which sections were dirty before saving
+    const sectionsToSave: string[] = [];
+    if (isCustomizeFeaturesDirty) sectionsToSave.push('customizeFeatures');
+    if (isPreferencesDirty) sectionsToSave.push('preferences');
+    
+    handleSaveCustomizeFeatures();
+    handleSavePreferences();
+    
+    setSavedSection('all');
+    setSavedSectionsFromAll(sectionsToSave);
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('all');
       setTimeout(() => {
         setSavedSection(null);
-        setFadingOut(null);
+        setSavedSectionsFromAll([]);
       }, 300);
-    }, 2000);
+    }, 1700);
   };
 
   return (
@@ -102,23 +209,51 @@ export default function ClearContractsProductEntitlement() {
 
       {/* Customize Features Section */}
       <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setCustomizeFeaturesOpen(!customizeFeaturesOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Customize Features</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${customizeFeaturesOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="w-full flex items-center gap-2 mb-4 h-6">
+          <button
+            onClick={() => setCustomizeFeaturesOpen(!customizeFeaturesOpen)}
+            className="flex items-center gap-2 flex-1 h-6"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+            <p className="font-semibold text-sm text-[#121313]">Customize Features</p>
+            {isCustomizeFeaturesDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+            {isCustomizeFeaturesDirty && savedSection !== 'customizeFeatures' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveCustomizeFeatures();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'customizeFeatures' || (savedSection === 'all' && savedSectionsFromAll.includes('customizeFeatures'))) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'customizeFeatures' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setCustomizeFeaturesOpen(!customizeFeaturesOpen)}
+            className="flex items-center h-6"
+          >
+            <svg
+              className={`w-5 h-5 text-[#121313] transition-transform ${customizeFeaturesOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
         {customizeFeaturesOpen && (
           <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
             {/* AskTQ Contract */}
@@ -127,7 +262,17 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Contract</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={askTqContract} onChange={(e) => setAskTqContract(e.target.checked)} />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* AskTQ Contract */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Contract</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={askTqContract} onChange={(e) => setAskTqContract(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -137,7 +282,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Payer Policy</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={askTqPayerPolicy} onChange={(e) => setAskTqPayerPolicy(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -147,7 +292,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">Document Viewer</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={documentViewer} onChange={(e) => setDocumentViewer(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -157,7 +302,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">Rate Summary</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={rateSummary} onChange={(e) => setRateSummary(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -167,7 +312,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">Neaural Indexing</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={neauralIndexing} onChange={(e) => setNeauralIndexing(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -177,7 +322,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">Auto Indexing</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={autoIndexing} onChange={(e) => setAutoIndexing(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -187,7 +332,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">Auto Extract Rate Tables</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={autoExtractRateTables} onChange={(e) => setAutoExtractRateTables(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -197,7 +342,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">AI Context</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={aiContext} onChange={(e) => setAiContext(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -207,7 +352,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">Redacto</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={redacto} onChange={(e) => setRedacto(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -217,7 +362,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">CC Approval Workflow</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={ccApprovalWorkflow} onChange={(e) => setCcApprovalWorkflow(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -227,7 +372,7 @@ export default function ClearContractsProductEntitlement() {
                 <p className="font-medium text-xs text-[#121313] mb-1">Claims Data Schema</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input type="checkbox" className="sr-only peer" checked={claimsDataSchema} onChange={(e) => setClaimsDataSchema(e.target.checked)} />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
@@ -251,7 +396,7 @@ export default function ClearContractsProductEntitlement() {
             )}
           </button>
           <div className="w-[60px] h-6 flex items-center justify-center">
-            {isPreferencesDirty && savedSection !== 'preferences' && (
+            {isPreferencesDirty && savedSection !== 'preferences' && savedSection !== 'all' && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -262,8 +407,8 @@ export default function ClearContractsProductEntitlement() {
                 Save
               </button>
             )}
-            {savedSection === 'preferences' && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${fadingOut === 'preferences' ? 'opacity-0' : 'opacity-100'}`}>
+            {(savedSection === 'preferences' || (savedSection === 'all' && savedSectionsFromAll.includes('preferences'))) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'preferences' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
                 <ShinyText text="Saved" speed={3} />
               </div>
             )}
@@ -480,6 +625,18 @@ export default function ClearContractsProductEntitlement() {
           </div>
         )}
       </div>
+      
+      {/* Save All Button */}
+      {dirtySectionsCount > 1 && (
+        <div className="flex justify-end w-full mt-6 mb-4">
+          <button
+            onClick={handleSaveAll}
+            className="px-4 py-2 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256]"
+          >
+            Save All ({dirtySectionsCount} sections)
+          </button>
+        </div>
+      )}
     </div>
   );
 }
