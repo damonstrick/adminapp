@@ -34,7 +34,7 @@ export default function ProductsContent() {
               </div>
               
               {/* Content */}
-              <div className="flex flex-col gap-2 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-2 items-start relative shrink-0 w-full" style={{ paddingBottom: '24px' }}>
                 <p className="font-semibold leading-5 relative shrink-0 text-[#121313] text-sm tracking-[0.14px]">
                   {product.title}
                 </p>
