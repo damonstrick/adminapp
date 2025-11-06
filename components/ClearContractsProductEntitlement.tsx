@@ -90,39 +90,110 @@ export default function ClearContractsProductEntitlement() {
         </button>
         {customizeFeaturesOpen && (
           <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-            {/* Custom Service Lines */}
+            {/* AskTQ Contract */}
             <div className="flex items-start justify-between relative shrink-0 w-full">
               <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Custom Service Lines</p>
-                <p className="font-normal text-xs text-[#6e8081]">
-                  Tailor insights
-                </p>
+                <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Contract</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
-            {/* Custom Utilization Profile */}
+            {/* AskTQ Payer Policy */}
             <div className="flex items-start justify-between relative shrink-0 w-full">
               <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Custom Utilization Profile</p>
-                <p className="font-normal text-xs text-[#6e8081]">
-                  Define custom utilization metrics
-                </p>
+                <p className="font-medium text-xs text-[#121313] mb-1">AskTQ Payer Policy</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
             </div>
-            {/* Member Preferences */}
+            {/* Document Viewer */}
             <div className="flex items-start justify-between relative shrink-0 w-full">
               <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Member Preferences</p>
-                <p className="font-normal text-xs text-[#6e8081]">
-                  Custom preferences for members
-                </p>
+                <p className="font-medium text-xs text-[#121313] mb-1">Document Viewer</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* Rate Summary */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">Rate Summary</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* Neaural Indexing */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">Neaural Indexing</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* Auto Indexing */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">Auto Indexing</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* Auto Extract Rate Tables */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">Auto Extract Rate Tables</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* AI Context */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">AI Context</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* Redacto */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">Redacto</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* CC Approval Workflow */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">CC Approval Workflow</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+              </label>
+            </div>
+            {/* Claims Data Schema */}
+            <div className="flex items-start justify-between relative shrink-0 w-full">
+              <div className="flex-1">
+                <p className="font-medium text-xs text-[#121313] mb-1">Claims Data Schema</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
