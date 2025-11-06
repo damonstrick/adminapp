@@ -1044,7 +1044,7 @@ export default function ClearContractsProductEntitlement() {
                   </div>
                   <div className="h-1 relative shrink-0 w-full">
                     <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '25%' }} />
+                    <div className="absolute bottom-0 left-0 rounded-full top-0" style={{ right: '25%', backgroundColor: '#36C5BA' }} />
                   </div>
                 </div>
                 {/* Editor */}
@@ -1055,7 +1055,7 @@ export default function ClearContractsProductEntitlement() {
                   </div>
                   <div className="h-1 relative shrink-0 w-full">
                     <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '50%' }} />
+                    <div className="absolute bottom-0 left-0 rounded-full top-0" style={{ right: '50%', backgroundColor: '#16696D' }} />
                   </div>
                 </div>
                 {/* Viewer */}
@@ -1066,7 +1066,7 @@ export default function ClearContractsProductEntitlement() {
                   </div>
                   <div className="h-1 relative shrink-0 w-full">
                     <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '75%' }} />
+                    <div className="absolute bottom-0 left-0 rounded-full top-0" style={{ right: '75%', backgroundColor: '#FF7A4E' }} />
                   </div>
                 </div>
               </div>
