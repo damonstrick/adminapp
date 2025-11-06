@@ -10,22 +10,53 @@ export default function ClearContractsProductEntitlement() {
   
   // Preferences state
   const [initialPreferences, setInitialPreferences] = useState({
-    msDrgSelected: true,
-    hcpcsSelected: true,
+    notifyOnDocUpload: true,
+    enableRenewalEmails: true,
+    enableFolderView: false,
+    rateSummaryCustomer: false,
+    enableDocumentHierarchy: false,
+    enableIntakeStatuses: false,
+    enableRenewalDates: false,
+    renewalsMs2: false,
   });
-  const [msDrgSelected, setMsDrgSelected] = useState(initialPreferences.msDrgSelected);
-  const [hcpcsSelected, setHcpcsSelected] = useState(initialPreferences.hcpcsSelected);
+  
+  // Checkbox states for Preferences
+  const [notifyOnDocUpload, setNotifyOnDocUpload] = useState(initialPreferences.notifyOnDocUpload);
+  const [enableRenewalEmails, setEnableRenewalEmails] = useState(initialPreferences.enableRenewalEmails);
+  const [enableFolderView, setEnableFolderView] = useState(initialPreferences.enableFolderView);
+  const [rateSummaryCustomer, setRateSummaryCustomer] = useState(initialPreferences.rateSummaryCustomer);
+  const [enableDocumentHierarchy, setEnableDocumentHierarchy] = useState(initialPreferences.enableDocumentHierarchy);
+  const [enableIntakeStatuses, setEnableIntakeStatuses] = useState(initialPreferences.enableIntakeStatuses);
+  const [enableRenewalDates, setEnableRenewalDates] = useState(initialPreferences.enableRenewalDates);
+  const [renewalsMs2, setRenewalsMs2] = useState(initialPreferences.renewalsMs2);
   
   // Track which sections just saved
   const [savedSection, setSavedSection] = useState<string | null>(null);
   const [fadingOut, setFadingOut] = useState<string | null>(null);
   
   // Dirty state tracking
-  const isPreferencesDirty = (msDrgSelected !== initialPreferences.msDrgSelected) || 
-    (hcpcsSelected !== initialPreferences.hcpcsSelected);
+  const isPreferencesDirty = JSON.stringify({
+    notifyOnDocUpload,
+    enableRenewalEmails,
+    enableFolderView,
+    rateSummaryCustomer,
+    enableDocumentHierarchy,
+    enableIntakeStatuses,
+    enableRenewalDates,
+    renewalsMs2,
+  }) !== JSON.stringify(initialPreferences);
   
   const handleSavePreferences = () => {
-    setInitialPreferences({ msDrgSelected, hcpcsSelected });
+    setInitialPreferences({
+      notifyOnDocUpload,
+      enableRenewalEmails,
+      enableFolderView,
+      rateSummaryCustomer,
+      enableDocumentHierarchy,
+      enableIntakeStatuses,
+      enableRenewalDates,
+      renewalsMs2,
+    });
     setSavedSection('preferences');
     setFadingOut(null);
     setTimeout(() => {
@@ -252,102 +283,202 @@ export default function ClearContractsProductEntitlement() {
           </button>
         </div>
         {preferencesOpen && (
-        <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-
-          {/* Code Types */}
-          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-            <div className="flex flex-col gap-2 items-start relative shrink-0 w-full">
-              <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                Code Types
-              </p>
-              <p className="font-normal leading-4 relative shrink-0 text-xs text-[#4b595c] tracking-[0.12px]">
-                Select your preferred coding system for how rates and codes are displayed across the platform.
-              </p>
-            </div>
-
-            {/* MS-DRG vs APR-DRG */}
-            <div className="flex gap-[80px] items-center relative shrink-0 w-full">
-              <div className="flex gap-2 items-start relative shrink-0">
-                <div className="flex gap-2 items-start relative shrink-0">
-                  <button
-                    onClick={() => setMsDrgSelected(true)}
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      msDrgSelected ? 'border-[#16696d]' : 'border-[#d2d8dc]'
-                    }`}
-                  >
-                    {msDrgSelected && <div className="w-2 h-2 rounded-full bg-[#16696d]"></div>}
-                  </button>
-                  <div className="flex flex-col items-start relative shrink-0">
-                    <div className="flex gap-1 items-start relative shrink-0">
-                      <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                        MS-DRG
-                      </p>
-                      <p className="font-normal h-[15px] leading-4 relative shrink-0 text-[11px] text-[#6e8081] tracking-[0.11px] w-[54px]">
-                        (Default)
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-2 items-start relative shrink-0">
-                  <button
-                    onClick={() => setMsDrgSelected(false)}
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      !msDrgSelected ? 'border-[#16696d]' : 'border-[#d2d8dc]'
-                    }`}
-                  >
-                    {!msDrgSelected && <div className="w-2 h-2 rounded-full bg-[#16696d]"></div>}
-                  </button>
-                  <div className="flex flex-col items-start justify-center relative shrink-0">
-                    <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                      APR-DRG
-                    </p>
-                  </div>
-                </div>
+          <div className="flex flex-col gap-8 items-start relative shrink-0 w-full">
+            {/* Notifications & Communication */}
+            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                  Notifications & Communication
+                </p>
+                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
+                  Controls for user notifications, emails, and approvals
+                </p>
               </div>
-              <p className="font-normal leading-4 relative grow text-[11px] text-[#6e8081] tracking-[0.11px] break-words">
-                Turquoise provides a crosswalk between the two most widely used DRG systems: MS-DRGs and APR-DRGs. This lets you view and compare rates consistently, regardless of which coding system a hospital uses.
-              </p>
-            </div>
-            {/* HCPCS vs APC */}
-            <div className="flex gap-[114px] items-center relative shrink-0 w-full">
-              <div className="flex gap-2 items-start relative shrink-0">
-                <div className="flex gap-2 items-start relative shrink-0">
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+                <div className="flex gap-2 items-center relative shrink-0 w-full">
                   <button
-                    onClick={() => setHcpcsSelected(true)}
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      hcpcsSelected ? 'border-[#16696d]' : 'border-[#d2d8dc]'
+                    onClick={() => setNotifyOnDocUpload(!notifyOnDocUpload)}
+                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                      notifyOnDocUpload
+                        ? 'bg-[#16696d] border-[#16696d]'
+                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
                     }`}
                   >
-                    {hcpcsSelected && <div className="w-2 h-2 rounded-full bg-[#16696d]"></div>}
+                    {notifyOnDocUpload && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
                   </button>
-                  <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    HCPCS
-                  </p>
-                  <p className="font-normal h-[15px] leading-4 relative shrink-0 text-[11px] text-[#6e8081] tracking-[0.11px] w-[54px]">
-                    (Default)
+                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                    Enable notification on doc upload
                   </p>
                 </div>
-                <div className="flex gap-2 items-start relative shrink-0">
+                <div className="flex gap-2 items-center relative shrink-0 w-full">
                   <button
-                    onClick={() => setHcpcsSelected(false)}
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      !hcpcsSelected ? 'border-[#16696d]' : 'border-[#d2d8dc]'
+                    onClick={() => setEnableRenewalEmails(!enableRenewalEmails)}
+                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                      enableRenewalEmails
+                        ? 'bg-[#16696d] border-[#16696d]'
+                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
                     }`}
                   >
-                    {!hcpcsSelected && <div className="w-2 h-2 rounded-full bg-[#16696d]"></div>}
+                    {enableRenewalEmails && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
                   </button>
-                  <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    APC
+                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                    Enable renewal emails
                   </p>
                 </div>
               </div>
-              <p className="font-normal leading-4 relative grow text-[11px] text-[#6e8081] tracking-[0.11px] break-words">
-                Turquoise also crosswalks HCPCS and APC codes, allowing outpatient rates to be compared consistently across both coding systems.
-              </p>
+            </div>
+
+            {/* Organization & Display */}
+            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                  Organization & Display
+                </p>
+                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
+                  UI and grouping behavior within the Clear Contracts product
+                </p>
+              </div>
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+                <div className="flex gap-2 items-center relative shrink-0 w-full">
+                  <button
+                    onClick={() => setEnableFolderView(!enableFolderView)}
+                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                      enableFolderView
+                        ? 'bg-[#16696d] border-[#16696d]'
+                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
+                    }`}
+                  >
+                    {enableFolderView && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                    Enable folder view
+                  </p>
+                </div>
+                <div className="flex gap-2 items-center relative shrink-0 w-full">
+                  <button
+                    onClick={() => setRateSummaryCustomer(!rateSummaryCustomer)}
+                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                      rateSummaryCustomer
+                        ? 'bg-[#16696d] border-[#16696d]'
+                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
+                    }`}
+                  >
+                    {rateSummaryCustomer && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                    Rate summary customer
+                  </p>
+                </div>
+                <div className="flex gap-2 items-center relative shrink-0 w-full">
+                  <button
+                    onClick={() => setEnableDocumentHierarchy(!enableDocumentHierarchy)}
+                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                      enableDocumentHierarchy
+                        ? 'bg-[#16696d] border-[#16696d]'
+                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
+                    }`}
+                  >
+                    {enableDocumentHierarchy && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                    Enable document hierarchy
+                  </p>
+                </div>
+                <div className="flex gap-2 items-center relative shrink-0 w-full">
+                  <button
+                    onClick={() => setEnableIntakeStatuses(!enableIntakeStatuses)}
+                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                      enableIntakeStatuses
+                        ? 'bg-[#16696d] border-[#16696d]'
+                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
+                    }`}
+                  >
+                    {enableIntakeStatuses && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                    Enable intake statuses
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contract Lifecycle */}
+            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                  Contract Lifecycle
+                </p>
+                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
+                  Time-based features and automations
+                </p>
+              </div>
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+                <div className="flex gap-2 items-center relative shrink-0 w-full">
+                  <button
+                    onClick={() => setEnableRenewalDates(!enableRenewalDates)}
+                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                      enableRenewalDates
+                        ? 'bg-[#16696d] border-[#16696d]'
+                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
+                    }`}
+                  >
+                    {enableRenewalDates && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                    Enable renewal dates
+                  </p>
+                </div>
+                <div className="flex gap-2 items-center relative shrink-0 w-full">
+                  <button
+                    onClick={() => setRenewalsMs2(!renewalsMs2)}
+                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                      renewalsMs2
+                        ? 'bg-[#16696d] border-[#16696d]'
+                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
+                    }`}
+                  >
+                    {renewalsMs2 && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                    Renewals MS2
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );
