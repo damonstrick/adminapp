@@ -874,6 +874,142 @@ export default function ClearContractsProductEntitlement() {
         )}
       </div>
 
+      {/* Seat Configuration Section */}
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+        <button
+          onClick={() => setSeatConfigOpen(!seatConfigOpen)}
+          className="w-full flex items-center gap-2 mb-4"
+        >
+          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <p className="font-semibold text-sm text-[#121313]">Seat Configuration</p>
+          <svg
+            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${seatConfigOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {seatConfigOpen && (
+          <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+            {/* Toggle Buttons */}
+            <div className="flex gap-2 items-start relative shrink-0">
+              <button
+                onClick={() => setSeatMode('unlimited')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                  seatMode === 'unlimited'
+                    ? 'bg-[#16696d] text-white'
+                    : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
+                }`}
+              >
+                Unlimited
+              </button>
+              <button
+                onClick={() => setSeatMode('custom')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                  seatMode === 'custom'
+                    ? 'bg-[#16696d] text-white'
+                    : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
+                }`}
+              >
+                Custom
+              </button>
+            </div>
+
+            {/* Number of Seats Input */}
+            <div className="w-full">
+              <label className="block text-xs font-medium text-[#121313] mb-2">Number of Seats</label>
+              <input
+                type="number"
+                placeholder="Hint Label"
+                className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
+              />
+            </div>
+
+            {/* Seat Usage */}
+            <div className="bg-white border border-gray-200 rounded-[10px] p-4 w-full">
+              <div className="flex items-center gap-2 mb-4">
+                <p className="font-semibold text-sm text-[#101828]">Seat Usage</p>
+                <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
+                  15
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
+                {/* Admin */}
+                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                  <div className="flex items-center gap-1 justify-between w-full">
+                    <p className="font-medium text-[11px] text-[#6e8081]">Admin</p>
+                    <p className="font-medium text-[11px] text-[#6e8081]">8</p>
+                  </div>
+                  <div className="h-1 relative shrink-0 w-full">
+                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
+                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '25%' }} />
+                  </div>
+                </div>
+                {/* Editor */}
+                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                  <div className="flex items-center gap-1 justify-between w-full">
+                    <p className="font-medium text-[11px] text-[#6e8081]">Editor</p>
+                    <p className="font-medium text-[11px] text-[#6e8081]">4</p>
+                  </div>
+                  <div className="h-1 relative shrink-0 w-full">
+                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
+                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '50%' }} />
+                  </div>
+                </div>
+                {/* Viewer */}
+                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
+                  <div className="flex items-center gap-1 justify-between w-full">
+                    <p className="font-medium text-[11px] text-[#6e8081]">Viewer</p>
+                    <p className="font-medium text-[11px] text-[#6e8081]">3</p>
+                  </div>
+                  <div className="h-1 relative shrink-0 w-full">
+                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
+                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '75%' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Data Configuration Section */}
+      <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+        <button
+          onClick={() => setDataConfigOpen(!dataConfigOpen)}
+          className="w-full flex items-center gap-2 mb-4"
+        >
+          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+          </svg>
+          <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
+          <svg
+            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${dataConfigOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {dataConfigOpen && (
+          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+            {/* Clear Rates */}
+            {renderConditionsSection('clear', 'Clear Rates')}
+
+            {/* Hospital Rates */}
+            {renderConditionsSection('hospital', 'Hospital Rates')}
+
+            {/* Payer Rates */}
+            {renderConditionsSection('payer', 'Payer Rates')}
+          </div>
+        )}
+      </div>
+
       {/* Preferences Section */}
       <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
@@ -1116,142 +1252,6 @@ export default function ClearContractsProductEntitlement() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-      
-      {/* Seat Configuration Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setSeatConfigOpen(!seatConfigOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Seat Configuration</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${seatConfigOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {seatConfigOpen && (
-          <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-            {/* Toggle Buttons */}
-            <div className="flex gap-2 items-start relative shrink-0">
-              <button
-                onClick={() => setSeatMode('unlimited')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                  seatMode === 'unlimited'
-                    ? 'bg-[#16696d] text-white'
-                    : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
-                }`}
-              >
-                Unlimited
-              </button>
-              <button
-                onClick={() => setSeatMode('custom')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                  seatMode === 'custom'
-                    ? 'bg-[#16696d] text-white'
-                    : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
-                }`}
-              >
-                Custom
-              </button>
-            </div>
-
-            {/* Number of Seats Input */}
-            <div className="w-full">
-              <label className="block text-xs font-medium text-[#121313] mb-2">Number of Seats</label>
-              <input
-                type="number"
-                placeholder="Hint Label"
-                className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
-              />
-            </div>
-
-            {/* Seat Usage */}
-            <div className="bg-white border border-gray-200 rounded-[10px] p-4 w-full">
-              <div className="flex items-center gap-2 mb-4">
-                <p className="font-semibold text-sm text-[#101828]">Seat Usage</p>
-                <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                  15
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-                {/* Admin */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Admin</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">8</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '25%' }} />
-                  </div>
-                </div>
-                {/* Editor */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Editor</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">4</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '50%' }} />
-                  </div>
-                </div>
-                {/* Viewer */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Viewer</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">3</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '75%' }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Data Configuration Section */}
-      <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setDataConfigOpen(!dataConfigOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${dataConfigOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {dataConfigOpen && (
-          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-            {/* Clear Rates */}
-            {renderConditionsSection('clear', 'Clear Rates')}
-
-            {/* Hospital Rates */}
-            {renderConditionsSection('hospital', 'Hospital Rates')}
-
-            {/* Payer Rates */}
-            {renderConditionsSection('payer', 'Payer Rates')}
           </div>
         )}
       </div>
