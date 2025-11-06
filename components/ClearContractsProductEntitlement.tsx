@@ -836,7 +836,7 @@ export default function ClearContractsProductEntitlement() {
                   AI-powered features and intelligent document processing
                 </p>
               </div>
-              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full" style={{ paddingLeft: '12px' }}>
                 {/* AskTQ Contract */}
                 <div className="flex items-start justify-between relative shrink-0 w-full">
                   <div className="flex-1">
@@ -890,7 +890,7 @@ export default function ClearContractsProductEntitlement() {
                   Document viewing, indexing, and processing capabilities
                 </p>
               </div>
-              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full" style={{ paddingLeft: '12px' }}>
                 {/* Document Viewer */}
                 <div className="flex items-start justify-between relative shrink-0 w-full">
                   <div className="flex-1">
@@ -944,7 +944,7 @@ export default function ClearContractsProductEntitlement() {
                   Reporting and data analysis features
                 </p>
               </div>
-              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full" style={{ paddingLeft: '12px' }}>
                 {/* Rate Summary */}
                 <div className="flex items-start justify-between relative shrink-0 w-full">
                   <div className="flex-1">
@@ -978,7 +978,7 @@ export default function ClearContractsProductEntitlement() {
                   Approval and workflow automation features
                 </p>
               </div>
-              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full" style={{ paddingLeft: '12px' }}>
                 {/* CC Approval Workflow */}
                 <div className="flex items-start justify-between relative shrink-0 w-full">
                   <div className="flex-1">
