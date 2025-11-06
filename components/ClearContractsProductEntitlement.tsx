@@ -560,7 +560,6 @@ export default function ClearContractsProductEntitlement() {
     notifyOnDocUpload: true,
     enableRenewalEmails: true,
     enableFolderView: false,
-    rateSummaryCustomer: false,
     enableDocumentHierarchy: false,
     enableIntakeStatuses: false,
     enableRenewalDates: false,
@@ -571,7 +570,6 @@ export default function ClearContractsProductEntitlement() {
   const [notifyOnDocUpload, setNotifyOnDocUpload] = useState(initialPreferences.notifyOnDocUpload);
   const [enableRenewalEmails, setEnableRenewalEmails] = useState(initialPreferences.enableRenewalEmails);
   const [enableFolderView, setEnableFolderView] = useState(initialPreferences.enableFolderView);
-  const [rateSummaryCustomer, setRateSummaryCustomer] = useState(initialPreferences.rateSummaryCustomer);
   const [enableDocumentHierarchy, setEnableDocumentHierarchy] = useState(initialPreferences.enableDocumentHierarchy);
   const [enableIntakeStatuses, setEnableIntakeStatuses] = useState(initialPreferences.enableIntakeStatuses);
   const [enableRenewalDates, setEnableRenewalDates] = useState(initialPreferences.enableRenewalDates);
@@ -601,7 +599,6 @@ export default function ClearContractsProductEntitlement() {
     notifyOnDocUpload,
     enableRenewalEmails,
     enableFolderView,
-    rateSummaryCustomer,
     enableDocumentHierarchy,
     enableIntakeStatuses,
     enableRenewalDates,
@@ -701,7 +698,6 @@ export default function ClearContractsProductEntitlement() {
       notifyOnDocUpload,
       enableRenewalEmails,
       enableFolderView,
-      rateSummaryCustomer,
       enableDocumentHierarchy,
       enableIntakeStatuses,
       enableRenewalDates,
@@ -711,7 +707,6 @@ export default function ClearContractsProductEntitlement() {
       notifyOnDocUpload,
       enableRenewalEmails,
       enableFolderView,
-      rateSummaryCustomer,
       enableDocumentHierarchy,
       enableIntakeStatuses,
       enableRenewalDates,
@@ -1270,25 +1265,6 @@ export default function ClearContractsProductEntitlement() {
                   </button>
                   <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
                     Enable folder view
-                  </p>
-                </div>
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setRateSummaryCustomer(!rateSummaryCustomer)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      rateSummaryCustomer
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {rateSummaryCustomer && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Rate summary customer
                   </p>
                 </div>
                 <div className="flex gap-2 items-center relative shrink-0 w-full">
