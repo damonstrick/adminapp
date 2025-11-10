@@ -185,11 +185,12 @@ export default function ClearContractsProductEntitlement() {
           ...condition,
           scopes: condition.scopes.map(scope => {
             if (scope.id === scopeId) {
-              // Don't add if tag already exists
-              if (scope.tags.includes(tagValue.trim())) {
+              // Don't add if tag already exists (case-insensitive)
+              const trimmedValue = tagValue.trim();
+              if (scope.tags.some(tag => tag.toLowerCase() === trimmedValue.toLowerCase())) {
                 return scope;
               }
-              return { ...scope, tags: [...scope.tags, tagValue.trim()] };
+              return { ...scope, tags: [...scope.tags, trimmedValue] };
             }
             return scope;
           }),
@@ -197,6 +198,83 @@ export default function ClearContractsProductEntitlement() {
       }
       return condition;
     }));
+    setTagSearchValue('');
+    setAddTagPopover(null);
+  };
+  
+  // Function to find matching option from available options (case-insensitive)
+  const findMatchingOption = (scopeType: ScopeType, inputValue: string): string | null => {
+    const options = getScopeOptions(scopeType);
+    const trimmedInput = inputValue.trim();
+    if (!trimmedInput) return null;
+    
+    const normalizedInput = trimmedInput.toLowerCase();
+    
+    // First try exact match (case-insensitive)
+    const exactMatch = options.find(opt => opt.toLowerCase() === normalizedInput);
+    if (exactMatch) return exactMatch;
+    
+    // Try matching by starting with the input (case-insensitive)
+    const startsWithMatch = options.find(opt => opt.toLowerCase().startsWith(normalizedInput));
+    if (startsWithMatch) return startsWithMatch;
+    
+    // Then try partial match (case-insensitive) - input contains option or option contains input
+    const partialMatch = options.find(opt => {
+      const optLower = opt.toLowerCase();
+      return optLower.includes(normalizedInput) || normalizedInput.includes(optLower);
+    });
+    if (partialMatch) return partialMatch;
+    
+    // If no match found, return the input value as-is (user can add custom values)
+    return trimmedInput;
+  };
+  
+  // Function to add multiple tags from comma-separated values
+  const addTagsFromCommaSeparated = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string, inputValue: string) => {
+    if (!inputValue.trim()) return;
+    
+    // Get the scope to find its type
+    const currentConditions = getConditions(section);
+    const condition = currentConditions.find(c => c.id === conditionId);
+    if (!condition) return;
+    
+    const scope = condition.scopes.find(s => s.id === scopeId);
+    if (!scope) return;
+    
+    // Split by comma and process each value
+    const values = inputValue.split(',').map(v => v.trim()).filter(v => v.length > 0);
+    const tagsToAdd: string[] = [];
+    
+    values.forEach(value => {
+      // Find matching option or use the value as-is
+      const matchingOption = findMatchingOption(scope.type, value);
+      if (matchingOption) {
+        // Check if tag already exists (case-insensitive)
+        const alreadyExists = scope.tags.some(tag => tag.toLowerCase() === matchingOption.toLowerCase());
+        if (!alreadyExists) {
+          tagsToAdd.push(matchingOption);
+        }
+      }
+    });
+    
+    // Add all tags at once
+    if (tagsToAdd.length > 0) {
+      setConditionsForSection(section, currentConditions.map(condition => {
+        if (condition.id === conditionId) {
+          return {
+            ...condition,
+            scopes: condition.scopes.map(s => {
+              if (s.id === scopeId) {
+                return { ...s, tags: [...s.tags, ...tagsToAdd] };
+              }
+              return s;
+            }),
+          };
+        }
+        return condition;
+      }));
+    }
+    
     setTagSearchValue('');
     setAddTagPopover(null);
   };
@@ -373,9 +451,21 @@ export default function ClearContractsProductEntitlement() {
                                       if (e.key === 'Escape') {
                                         setAddTagPopover(null);
                                         setTagSearchValue('');
+                                      } else if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        // Check if input contains commas (multiple values)
+                                        if (tagSearchValue.includes(',')) {
+                                          addTagsFromCommaSeparated(section, condition.id, scope.id, tagSearchValue);
+                                        } else {
+                                          // Single value - check if it matches an option
+                                          const matchingOption = findMatchingOption(scope.type, tagSearchValue);
+                                          if (matchingOption) {
+                                            addTag(section, condition.id, scope.id, matchingOption);
+                                          }
+                                        }
                                       }
                                     }}
-                                    placeholder="Search"
+                                    placeholder="Search or paste comma-separated values"
                                     className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
                                     autoFocus
                                   />
