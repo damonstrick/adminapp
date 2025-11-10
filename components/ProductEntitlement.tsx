@@ -496,7 +496,11 @@ export default function ProductEntitlement() {
                               {/* Options List */}
                               <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
                                 {getFilteredOptions(scope.type, tagSearchValue)
-                                  .filter(option => !scope.tags.includes(option)) // Filter out already added tags
+                                  .filter(option => {
+                                    // Filter out already added tags (case-insensitive)
+                                    const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+                                    return !existingTagsLower.includes(option.toLowerCase());
+                                  })
                                   .map((option, index) => (
                                   <button
                                     key={option}
@@ -508,7 +512,10 @@ export default function ProductEntitlement() {
                                     </p>
                                   </button>
                                 ))}
-                                {getFilteredOptions(scope.type, tagSearchValue).filter(option => !scope.tags.includes(option)).length === 0 && (
+                                {getFilteredOptions(scope.type, tagSearchValue).filter(option => {
+                                  const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+                                  return !existingTagsLower.includes(option.toLowerCase());
+                                }).length === 0 && (
                                   <div className="w-full p-2 text-center">
                                     <p className="font-normal text-xs text-[#6e8081]">No options found</p>
                                   </div>
