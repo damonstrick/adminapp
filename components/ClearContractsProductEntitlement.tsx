@@ -116,13 +116,13 @@ export default function ClearContractsProductEntitlement() {
     return conditions;
   };
   
-  const setConditionsForSection = (section: 'clear' | 'hospital' | 'payer', newConditions: Condition[]) => {
+  const setConditionsForSection = (section: 'clear' | 'hospital' | 'payer', newConditions: Condition[] | ((prev: Condition[]) => Condition[])) => {
     if (section === 'hospital') {
-      setHospitalRatesConditions(newConditions);
+      setHospitalRatesConditions(newConditions as React.SetStateAction<Condition[]>);
     } else if (section === 'payer') {
-      setPayerRatesConditions(newConditions);
+      setPayerRatesConditions(newConditions as React.SetStateAction<Condition[]>);
     } else {
-      setConditions(newConditions);
+      setConditions(newConditions as React.SetStateAction<Condition[]>);
     }
   };
   
@@ -210,13 +210,16 @@ export default function ClearContractsProductEntitlement() {
     
     const normalizedInput = trimmedInput.toLowerCase();
     
-    // First try exact match (case-insensitive)
+    // First try exact match (case-insensitive) - this is the most common case
     const exactMatch = options.find(opt => opt.toLowerCase() === normalizedInput);
     if (exactMatch) return exactMatch;
     
-    // Try matching by starting with the input (case-insensitive)
-    const startsWithMatch = options.find(opt => opt.toLowerCase().startsWith(normalizedInput));
-    if (startsWithMatch) return startsWithMatch;
+    // Try matching by starting with the input (case-insensitive) - for partial typing
+    // Only use this if the input is at least 3 characters to avoid false matches
+    if (normalizedInput.length >= 3) {
+      const startsWithMatch = options.find(opt => opt.toLowerCase().startsWith(normalizedInput));
+      if (startsWithMatch) return startsWithMatch;
+    }
     
     // Then try partial match (case-insensitive) - input contains option or option contains input
     const partialMatch = options.find(opt => {
@@ -231,9 +234,10 @@ export default function ClearContractsProductEntitlement() {
   
   // Function to add multiple tags from comma-separated values
   const addTagsFromCommaSeparated = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string, inputValue: string) => {
-    if (!inputValue.trim()) return;
+    const trimmedInput = inputValue.trim();
+    if (!trimmedInput) return;
     
-    // Get the scope to find its type
+    // Get current conditions to find scope type
     const currentConditions = getConditions(section);
     const condition = currentConditions.find(c => c.id === conditionId);
     if (!condition) return;
@@ -242,38 +246,53 @@ export default function ClearContractsProductEntitlement() {
     if (!scope) return;
     
     // Split by comma and process each value
-    const values = inputValue.split(',').map(v => v.trim()).filter(v => v.length > 0);
+    const values = trimmedInput.split(',').map(v => v.trim()).filter(v => v.length > 0);
     const tagsToAdd: string[] = [];
+    const existingTagsLower = new Set(scope.tags.map(tag => tag.toLowerCase()));
     
     values.forEach(value => {
+      if (!value) return;
+      
       // Find matching option or use the value as-is
       const matchingOption = findMatchingOption(scope.type, value);
-      if (matchingOption) {
+      if (matchingOption && matchingOption.trim()) {
         // Check if tag already exists (case-insensitive)
-        const alreadyExists = scope.tags.some(tag => tag.toLowerCase() === matchingOption.toLowerCase());
+        const alreadyExists = existingTagsLower.has(matchingOption.toLowerCase());
         if (!alreadyExists) {
           tagsToAdd.push(matchingOption);
+          existingTagsLower.add(matchingOption.toLowerCase()); // Track added tags to avoid duplicates in same batch
         }
       }
     });
     
-    // Add all tags at once
-    if (tagsToAdd.length > 0) {
-      setConditionsForSection(section, currentConditions.map(condition => {
+    // If no tags to add, just close the popover
+    if (tagsToAdd.length === 0) {
+      setTagSearchValue('');
+      setAddTagPopover(null);
+      return;
+    }
+    
+    // Add all tags at once using functional update
+    setConditionsForSection(section, (prevConditions) => {
+      return prevConditions.map(condition => {
         if (condition.id === conditionId) {
           return {
             ...condition,
             scopes: condition.scopes.map(s => {
               if (s.id === scopeId) {
-                return { ...s, tags: [...s.tags, ...tagsToAdd] };
+                // Get existing tags and add new ones, avoiding duplicates
+                const existingTags = s.tags;
+                const existingLower = new Set(existingTags.map(t => t.toLowerCase()));
+                const newTags = tagsToAdd.filter(tag => !existingLower.has(tag.toLowerCase()));
+                return { ...s, tags: [...existingTags, ...newTags] };
               }
               return s;
             }),
           };
         }
         return condition;
-      }));
-    }
+      });
+    });
     
     setTagSearchValue('');
     setAddTagPopover(null);
@@ -449,16 +468,21 @@ export default function ClearContractsProductEntitlement() {
                                     onChange={(e) => setTagSearchValue(e.target.value)}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Escape') {
+                                        e.preventDefault();
                                         setAddTagPopover(null);
                                         setTagSearchValue('');
                                       } else if (e.key === 'Enter') {
                                         e.preventDefault();
+                                        e.stopPropagation();
+                                        const inputValue = tagSearchValue.trim();
+                                        if (!inputValue) return;
+                                        
                                         // Check if input contains commas (multiple values)
-                                        if (tagSearchValue.includes(',')) {
-                                          addTagsFromCommaSeparated(section, condition.id, scope.id, tagSearchValue);
+                                        if (inputValue.includes(',')) {
+                                          addTagsFromCommaSeparated(section, condition.id, scope.id, inputValue);
                                         } else {
                                           // Single value - check if it matches an option
-                                          const matchingOption = findMatchingOption(scope.type, tagSearchValue);
+                                          const matchingOption = findMatchingOption(scope.type, inputValue);
                                           if (matchingOption) {
                                             addTag(section, condition.id, scope.id, matchingOption);
                                           }
