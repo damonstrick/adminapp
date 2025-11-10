@@ -498,19 +498,125 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
     }));
   };
 
+  // Function to find matching option from available options (case-insensitive)
+  const findMatchingOption = (scopeType: ScopeType, inputValue: string): string | null => {
+    const options = getScopeOptions(scopeType);
+    const trimmedInput = inputValue.trim();
+    if (!trimmedInput) return null;
+    
+    const normalizedInput = trimmedInput.toLowerCase();
+    
+    // First try exact match (case-insensitive) - this is the most common case
+    const exactMatch = options.find(opt => opt.toLowerCase() === normalizedInput);
+    if (exactMatch) return exactMatch;
+    
+    // Try matching by starting with the input (case-insensitive) - for partial typing
+    // Only use this if the input is at least 3 characters to avoid false matches
+    if (normalizedInput.length >= 3) {
+      const startsWithMatch = options.find(opt => opt.toLowerCase().startsWith(normalizedInput));
+      if (startsWithMatch) return startsWithMatch;
+    }
+    
+    // Then try partial match (case-insensitive) - input contains option or option contains input
+    const partialMatch = options.find(opt => {
+      const optLower = opt.toLowerCase();
+      return optLower.includes(normalizedInput) || normalizedInput.includes(optLower);
+    });
+    if (partialMatch) return partialMatch;
+    
+    // If no match found, return the input value as-is (user can add custom values)
+    return trimmedInput;
+  };
+
+  // Function to add multiple tags from comma-separated values
+  const addTagsFromCommaSeparated = (conditionId: string, scopeId: string, inputValue: string) => {
+    const trimmedInput = inputValue.trim();
+    if (!trimmedInput) return;
+    
+    // Find the scope to get its type
+    const condition = conditions.find(c => c.id === conditionId);
+    if (!condition) return;
+    
+    const scope = condition.scopes.find(s => s.id === scopeId);
+    if (!scope) return;
+    
+    // Split by comma and process each value
+    const values = trimmedInput.split(',').map(v => v.trim()).filter(v => v.length > 0);
+    const tagsToAdd: string[] = [];
+    const existingTagsLower = new Set(scope.tags.map(tag => tag.toLowerCase()));
+    
+    values.forEach(value => {
+      if (!value) return;
+      
+      // Find matching option or use the value as-is
+      const matchingOption = findMatchingOption(scope.type, value);
+      if (matchingOption && matchingOption.trim()) {
+        // Check if tag already exists (case-insensitive)
+        const alreadyExists = existingTagsLower.has(matchingOption.toLowerCase());
+        if (!alreadyExists) {
+          tagsToAdd.push(matchingOption);
+          existingTagsLower.add(matchingOption.toLowerCase()); // Track added tags to avoid duplicates in same batch
+        }
+      }
+    });
+    
+    // If no tags to add, just close the popover
+    if (tagsToAdd.length === 0) {
+      setTagSearchValue('');
+      setAddTagPopover(null);
+      return;
+    }
+    
+    // Add all tags at once using functional update
+    setConditions((prevConditions) => {
+      return prevConditions.map(condition => {
+        if (condition.id === conditionId) {
+          return {
+            ...condition,
+            scopes: condition.scopes.map(s => {
+              if (s.id === scopeId) {
+                // Get existing tags and add new ones, avoiding duplicates
+                const existingTags = s.tags;
+                const existingLower = new Set(existingTags.map(t => t.toLowerCase()));
+                const newTags = tagsToAdd.filter(tag => !existingLower.has(tag.toLowerCase()));
+                return { ...s, tags: [...existingTags, ...newTags] };
+              }
+              return s;
+            }),
+          };
+        }
+        return condition;
+      });
+    });
+    
+    setTagSearchValue('');
+    setAddTagPopover(null);
+  };
+
   const addTag = (conditionId: string, scopeId: string, tagValue: string) => {
     if (!tagValue.trim()) return;
+    
+    // Use findMatchingOption to get the correct case/formatted value
+    const condition = conditions.find(c => c.id === conditionId);
+    if (!condition) return;
+    const scope = condition.scopes.find(s => s.id === scopeId);
+    if (!scope) return;
+    
+    const matchingOption = findMatchingOption(scope.type, tagValue);
+    if (!matchingOption) return;
+    
     setConditions(conditions.map(condition => {
       if (condition.id === conditionId) {
         return {
           ...condition,
           scopes: condition.scopes.map(scope => {
             if (scope.id === scopeId) {
-              // Don't add if tag already exists
-              if (scope.tags.includes(tagValue.trim())) {
+              // Don't add if tag already exists (case-insensitive)
+              const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+              if (existingTagsLower.includes(matchingOption.toLowerCase())) {
                 return scope;
               }
-              return { ...scope, tags: [...scope.tags, tagValue.trim()] };
+              return { ...scope, tags: [...scope.tags, matchingOption] };
             }
             return scope;
           }),
@@ -1023,11 +1129,28 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
                                       onChange={(e) => setTagSearchValue(e.target.value)}
                                       onKeyDown={(e) => {
                                         if (e.key === 'Escape') {
+                                          e.preventDefault();
                                           setAddTagPopover(null);
                                           setTagSearchValue('');
+                                        } else if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          const inputValue = tagSearchValue.trim();
+                                          if (!inputValue) return;
+                                          
+                                          // Check if input contains commas (multiple values)
+                                          if (inputValue.includes(',')) {
+                                            addTagsFromCommaSeparated(condition.id, scope.id, inputValue);
+                                          } else {
+                                            // Single value - check if it matches an option
+                                            const matchingOption = findMatchingOption(scope.type, inputValue);
+                                            if (matchingOption) {
+                                              addTag(condition.id, scope.id, matchingOption);
+                                            }
+                                          }
                                         }
                                       }}
-                                      placeholder="Search"
+                                      placeholder="Search or paste comma-separated values"
                                       className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
                                       autoFocus
                                     />
@@ -1037,7 +1160,11 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
                                 {/* Options List */}
                                 <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
                                   {getFilteredOptions(scope.type, tagSearchValue)
-                                    .filter(option => !scope.tags.includes(option)) // Filter out already added tags
+                                    .filter(option => {
+                                      // Filter out already added tags (case-insensitive)
+                                      const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+                                      return !existingTagsLower.includes(option.toLowerCase());
+                                    })
                                     .map((option) => (
                                     <button
                                       key={option}
@@ -1049,7 +1176,10 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
                                       </p>
                                     </button>
                                   ))}
-                                  {getFilteredOptions(scope.type, tagSearchValue).filter(option => !scope.tags.includes(option)).length === 0 && (
+                                  {getFilteredOptions(scope.type, tagSearchValue).filter(option => {
+                                    const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+                                    return !existingTagsLower.includes(option.toLowerCase());
+                                  }).length === 0 && (
                                     <div className="w-full p-2 text-center">
                                       <p className="font-normal text-xs text-[#6e8081]">No options found</p>
                                     </div>
