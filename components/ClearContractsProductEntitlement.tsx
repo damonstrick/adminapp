@@ -438,50 +438,6 @@ export default function ClearContractsProductEntitlement() {
               </div>
             )}
 
-            {/* Seat Usage */}
-            <div className="bg-white border border-gray-200 rounded-[10px] p-4 w-full">
-              <div className="flex items-center gap-2 mb-4">
-                <p className="font-semibold text-sm text-[#101828]">Seat Usage</p>
-                <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                  15
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-                {/* Admin */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Admin</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">8</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bottom-0 left-0 rounded-full top-0" style={{ right: '25%', backgroundColor: '#36C5BA' }} />
-                  </div>
-                </div>
-                {/* Editor */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Editor</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">4</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bottom-0 left-0 rounded-full top-0" style={{ right: '50%', backgroundColor: '#16696D' }} />
-                  </div>
-                </div>
-                {/* Viewer */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Viewer</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">3</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bottom-0 left-0 rounded-full top-0" style={{ right: '75%', backgroundColor: '#FF7A4E' }} />
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </div>
