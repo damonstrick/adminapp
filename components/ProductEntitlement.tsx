@@ -19,11 +19,18 @@ interface Condition {
 const SCOPE_TYPES: ScopeType[] = ['State', 'Billing Code', 'CBSA', 'NPI'];
 
 export default function ProductEntitlement() {
-  const [customizeFeaturesOpen, setCustomizeFeaturesOpen] = useState(true);
+  const [analyzeOpen, setAnalyzeOpen] = useState(true);
   const [seatConfigOpen, setSeatConfigOpen] = useState(true);
   const [rateLimitOpen, setRateLimitOpen] = useState(true);
   const [dataConfigOpen, setDataConfigOpen] = useState(true);
   const [seatMode, setSeatMode] = useState<'unlimited' | 'custom'>('unlimited');
+  
+  // Analyze section state
+  const [customServiceLines, setCustomServiceLines] = useState(false);
+  const [customUtilizationProfile, setCustomUtilizationProfile] = useState(false);
+  const [memberPreferences, setMemberPreferences] = useState(false);
+  const [askTq, setAskTq] = useState(false);
+  const [exportRateLimit, setExportRateLimit] = useState('');
 
   // Initialize with empty state
   const [conditions, setConditions] = useState<Condition[]>([]);
@@ -678,65 +685,70 @@ export default function ProductEntitlement() {
         </div>
       </div>
 
-      {/* Customize Features Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setCustomizeFeaturesOpen(!customizeFeaturesOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Customize Features</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${customizeFeaturesOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      {/* Analyze Section */}
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
+        <div className="w-full flex items-center gap-2 mb-4 h-6">
+          <button
+            onClick={() => setAnalyzeOpen(!analyzeOpen)}
+            className="flex items-center gap-2 flex-1 h-6"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {customizeFeaturesOpen && (
-          <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+            <p className="font-semibold text-sm text-[#121313]">Analyze</p>
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer h-6">
+            <input type="checkbox" className="sr-only peer" checked={analyzeOpen} onChange={(e) => setAnalyzeOpen(e.target.checked)} />
+            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+          </label>
+        </div>
+        {analyzeOpen && (
+          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full" style={{ paddingLeft: '16px' }}>
             {/* Custom Service Lines */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Custom Service Lines</p>
-                <p className="font-normal text-xs text-[#6e8081]">
-                  Tailor insights
-                </p>
-              </div>
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">Custom Service Lines</p>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                <input type="checkbox" className="sr-only peer" checked={customServiceLines} onChange={(e) => setCustomServiceLines(e.target.checked)} />
+                <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
               </label>
             </div>
+            
             {/* Custom Utilization Profile */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Custom Utilization Profile</p>
-                <p className="font-normal text-xs text-[#6e8081]">
-                  Define custom utilization metrics
-                </p>
-              </div>
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">Custom Utilization Profile</p>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                <input type="checkbox" className="sr-only peer" checked={customUtilizationProfile} onChange={(e) => setCustomUtilizationProfile(e.target.checked)} />
+                <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
               </label>
             </div>
+            
             {/* Member Preferences */}
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Member Preferences</p>
-                <p className="font-normal text-xs text-[#6e8081]">
-                  Custom preferences for members
-                </p>
-              </div>
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">Member Preferences</p>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
+                <input type="checkbox" className="sr-only peer" checked={memberPreferences} onChange={(e) => setMemberPreferences(e.target.checked)} />
+                <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
               </label>
+            </div>
+            
+            {/* AskTQ */}
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">AskTQ</p>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={askTq} onChange={(e) => setAskTq(e.target.checked)} />
+                <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+              </label>
+            </div>
+            
+            {/* Export Rate Limit */}
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">Export Rate Limit</p>
+              <input
+                type="text"
+                value={exportRateLimit}
+                onChange={(e) => setExportRateLimit(e.target.value)}
+                placeholder="10"
+                className="bg-white border border-[#e3e7ea] rounded w-20 px-3 py-2 text-xs text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
+              />
             </div>
           </div>
         )}
