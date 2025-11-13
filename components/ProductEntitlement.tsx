@@ -735,7 +735,7 @@ export default function ProductEntitlement() {
       </div>
 
       {/* Analyze Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 relative shrink-0 w-full" style={{ paddingBottom: analyzeOpen ? '24px' : '0px' }}>
         <div className="w-full flex items-center gap-2 pt-[24px]" style={{ marginBottom: analyzeOpen ? '16px' : '0px', paddingBottom: analyzeOpen ? '0px' : '24px' }}>
           <button
             onClick={() => setAnalyzeOpen(!analyzeOpen)}
