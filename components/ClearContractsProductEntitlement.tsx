@@ -8,6 +8,8 @@ import ShinyText from './ShinyText';
 export default function ClearContractsProductEntitlement() {
   const [preferencesOpen, setPreferencesOpen] = useState(true);
   const [seatConfigOpen, setSeatConfigOpen] = useState(true);
+  const [rateLimitOpen, setRateLimitOpen] = useState(true);
+  const [processesOpen, setProcessesOpen] = useState(true);
   
   // Seat Configuration state
   const [initialSeatConfig, setInitialSeatConfig] = useState({
@@ -563,18 +565,24 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Rate Limit Configuration Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-6 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
-          <div className="flex items-center gap-2 flex-1 h-6">
+          <button
+            onClick={() => setRateLimitOpen(!rateLimitOpen)}
+            className="flex items-center gap-2 flex-1 h-6"
+          >
             <p className="font-semibold text-sm text-[#121313]">Rate Limit Configuration</p>
             {isRateLimitDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
-          </div>
+          </button>
           <div className="w-[60px] h-6 flex items-center justify-center">
             {isRateLimitDirty && savedSection !== 'rateLimit' && savedSection !== 'all' && (
               <button
-                onClick={handleSaveRateLimit}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveRateLimit();
+                }}
                 className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
               >
                 Save
@@ -586,32 +594,53 @@ export default function ClearContractsProductEntitlement() {
               </div>
             )}
           </div>
+          <button
+            onClick={() => setRateLimitOpen(!rateLimitOpen)}
+            className="flex items-center h-6"
+          >
+            <svg
+              className={`w-5 h-5 text-[#121313] transition-transform ${rateLimitOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         </div>
-        <div className="flex flex-col gap-2 items-start relative shrink-0 w-full">
-          <label className="text-xs font-normal text-[#121313]">Medicare API Rate Limit</label>
-          <input
-            type="text"
-            value={medicareApiRateLimit}
-            onChange={(e) => setMedicareApiRateLimit(e.target.value)}
-            placeholder="Hint Label"
-            className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
-          />
-        </div>
+        {rateLimitOpen && (
+          <div className="flex flex-col gap-2 items-start relative shrink-0 w-full">
+            <label className="text-xs font-normal text-[#121313]">Medicare API Rate Limit</label>
+            <input
+              type="text"
+              value={medicareApiRateLimit}
+              onChange={(e) => setMedicareApiRateLimit(e.target.value)}
+              placeholder="Hint Label"
+              className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
+            />
+          </div>
+        )}
       </div>
 
       {/* Processes Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-6 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
-          <div className="flex items-center gap-2 flex-1 h-6">
+          <button
+            onClick={() => setProcessesOpen(!processesOpen)}
+            className="flex items-center gap-2 flex-1 h-6"
+          >
             <p className="font-semibold text-sm text-[#121313]">Processes</p>
             {isProcessesDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
-          </div>
+          </button>
           <div className="w-[60px] h-6 flex items-center justify-center">
             {isProcessesDirty && savedSection !== 'processes' && savedSection !== 'all' && (
               <button
-                onClick={handleSaveProcesses}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveProcesses();
+                }}
                 className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
               >
                 Save
@@ -623,8 +652,22 @@ export default function ClearContractsProductEntitlement() {
               </div>
             )}
           </div>
+          <button
+            onClick={() => setProcessesOpen(!processesOpen)}
+            className="flex items-center h-6"
+          >
+            <svg
+              className={`w-5 h-5 text-[#121313] transition-transform ${processesOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         </div>
-        <div className="flex flex-col gap-6 items-start relative shrink-0 w-full" style={{ paddingLeft: '16px' }}>
+        {processesOpen && (
+          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full" style={{ paddingLeft: '16px' }}>
           {/* Auto Indexing */}
           <div className="flex items-center justify-between relative shrink-0 w-full h-5">
             <p className="font-medium text-xs text-[#121313]">Auto Indexing</p>
@@ -696,7 +739,8 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
             </label>
           </div>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Preferences Section */}
