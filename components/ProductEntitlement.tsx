@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import ShinyText from './ShinyText';
 
 type ScopeType = 'State' | 'Billing Code' | 'CBSA' | 'NPI';
 
@@ -26,11 +27,55 @@ export default function ProductEntitlement() {
   const [seatMode, setSeatMode] = useState<'unlimited' | 'custom'>('unlimited');
   
   // Analyze section state
-  const [customServiceLines, setCustomServiceLines] = useState(false);
-  const [customUtilizationProfile, setCustomUtilizationProfile] = useState(false);
-  const [memberPreferences, setMemberPreferences] = useState(false);
-  const [askTq, setAskTq] = useState(false);
-  const [exportRateLimit, setExportRateLimit] = useState('');
+  const [initialAnalyze, setInitialAnalyze] = useState({
+    customServiceLines: false,
+    customUtilizationProfile: false,
+    memberPreferences: false,
+    askTq: false,
+    exportRateLimit: '',
+  });
+  
+  const [customServiceLines, setCustomServiceLines] = useState(initialAnalyze.customServiceLines);
+  const [customUtilizationProfile, setCustomUtilizationProfile] = useState(initialAnalyze.customUtilizationProfile);
+  const [memberPreferences, setMemberPreferences] = useState(initialAnalyze.memberPreferences);
+  const [askTq, setAskTq] = useState(initialAnalyze.askTq);
+  const [exportRateLimit, setExportRateLimit] = useState(initialAnalyze.exportRateLimit);
+  
+  // Track which sections just saved
+  const [savedSection, setSavedSection] = useState<string | null>(null);
+  const [fadingOut, setFadingOut] = useState<string | null>(null);
+  
+  // Analyze section dirty state
+  const isAnalyzeDirty = JSON.stringify({
+    customServiceLines,
+    customUtilizationProfile,
+    memberPreferences,
+    askTq,
+    exportRateLimit,
+  }) !== JSON.stringify(initialAnalyze);
+  
+  const handleSaveAnalyze = () => {
+    setInitialAnalyze({
+      customServiceLines,
+      customUtilizationProfile,
+      memberPreferences,
+      askTq,
+      exportRateLimit,
+    });
+    console.log('Saving analyze section:', {
+      customServiceLines,
+      customUtilizationProfile,
+      memberPreferences,
+      askTq,
+      exportRateLimit,
+    });
+    setSavedSection('analyze');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('analyze');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
 
   // Initialize with empty state
   const [conditions, setConditions] = useState<Condition[]>([]);
@@ -693,8 +738,27 @@ export default function ProductEntitlement() {
             className="flex items-center gap-2 flex-1 h-6"
           >
             <p className="font-semibold text-sm text-[#121313]">Analyze</p>
+            {isAnalyzeDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
           </button>
           <div className="w-[60px] h-6 flex items-center justify-center">
+            {isAnalyzeDirty && savedSection !== 'analyze' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveAnalyze();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'analyze' || (savedSection === 'all')) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'analyze' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
           </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={analyzeOpen} onChange={(e) => setAnalyzeOpen(e.target.checked)} />
