@@ -950,23 +950,32 @@ export default function ProductEntitlement() {
 
       {/* Data Configuration Section */}
       <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setDataConfigOpen(!dataConfigOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${dataConfigOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+        <div className="w-full flex flex-col gap-2 mb-4">
+          <div className="w-full flex items-center gap-2">
+            <button
+              onClick={() => setDataConfigOpen(!dataConfigOpen)}
+              className="flex items-center gap-2 flex-1"
+            >
+              <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
+            </button>
+            <button
+              onClick={() => setDataConfigOpen(!dataConfigOpen)}
+              className="flex items-center"
+            >
+              <svg
+                className={`w-5 h-5 text-[#121313] transition-transform ${dataConfigOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <p className="text-xs text-[#6e8081] leading-4">
+            This will apply to both the Analyze and Search products
+          </p>
+        </div>
         {dataConfigOpen && (
           <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
             {/* Clear Rates */}
