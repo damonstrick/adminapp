@@ -346,7 +346,7 @@ export default function ClearContractsProductEntitlement() {
       {/* Features Section - Individual toggles at top */}
       <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-0 items-start px-0 py-6 relative shrink-0 w-full">
         {/* AskTQ Contract */}
-        <div className="w-full flex items-center gap-2 h-6 pt-6 pb-6 border-b border-[#e3e7ea] border-solid">
+        <div className="w-full flex items-center gap-2 h-6 pt-[24px] pb-[24px] border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">AskTQ Contract</p>
             {isAskTqContractDirty && (
@@ -378,7 +378,7 @@ export default function ClearContractsProductEntitlement() {
         </div>
         
         {/* AskTQ Payer Policy */}
-        <div className="w-full flex items-center gap-2 h-6 pt-6 pb-6 border-b border-[#e3e7ea] border-solid">
+        <div className="w-full flex items-center gap-2 h-6 pt-[24px] pb-[24px] border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">AskTQ Payer Policy</p>
             {isAskTqPayerPolicyDirty && (
@@ -410,7 +410,7 @@ export default function ClearContractsProductEntitlement() {
         </div>
         
         {/* Rate Summary */}
-        <div className="w-full flex items-center gap-2 h-6 pt-6 pb-6 border-b border-[#e3e7ea] border-solid">
+        <div className="w-full flex items-center gap-2 h-6 pt-[24px] pb-[24px] border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">Rate Summary</p>
             {isRateSummaryDirty && (
@@ -442,7 +442,7 @@ export default function ClearContractsProductEntitlement() {
         </div>
         
         {/* Scenario Modeling */}
-        <div className="w-full flex items-center gap-2 h-6 pt-6 pb-6 border-b border-[#e3e7ea] border-solid">
+        <div className="w-full flex items-center gap-2 h-6 pt-[24px] pb-[24px] border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">Scenario Modeling</p>
             {isScenarioModelingDirty && (
