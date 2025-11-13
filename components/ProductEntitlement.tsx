@@ -951,27 +951,7 @@ export default function ProductEntitlement() {
       {/* Data Configuration Section */}
       <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-4 relative shrink-0 w-full">
         <div className="w-full flex flex-col gap-2 mb-4">
-          <div className="w-full flex items-center gap-2">
-            <button
-              onClick={() => setDataConfigOpen(!dataConfigOpen)}
-              className="flex items-center gap-2 flex-1"
-            >
-              <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
-            </button>
-            <button
-              onClick={() => setDataConfigOpen(!dataConfigOpen)}
-              className="flex items-center"
-            >
-              <svg
-                className={`w-5 h-5 text-[#121313] transition-transform ${dataConfigOpen ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
+          <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
           <p className="text-xs text-[#6e8081] leading-4">
             This will apply to both the Analyze and Search products
           </p>
