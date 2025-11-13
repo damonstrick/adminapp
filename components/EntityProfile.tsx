@@ -703,16 +703,18 @@ export default function EntityProfile({ entityId }: EntityProfileProps) {
       <div className="bg-[#f7f8f8] border border-[#e3e7ea] border-solid box-border flex flex-col gap-5 items-start p-6 relative rounded-lg shrink-0 w-full mt-6">
         <div className="flex flex-col gap-3 items-start relative shrink-0">
           <p className="font-semibold leading-5 relative shrink-0 text-[#121313] text-sm tracking-[0.14px] whitespace-pre">
-            Archive Entity
+            {entity.type === 'Organization' ? 'Archive Org' : 'Archive Entity'}
           </p>
           <div className="flex flex-col gap-2 items-start relative shrink-0">
             <p className="font-normal leading-4 relative shrink-0 text-[#6e8081] text-xs tracking-[0.12px] w-full">
-              Once removed, there is no going back. This will permanently remove this Entity form this org
+              {entity.type === 'Organization' 
+                ? 'Once removed, there is no going back. This will permanently archive this organization.'
+                : 'Once removed, there is no going back. This will permanently remove this Entity form this org'}
             </p>
           </div>
         </div>
         <button className="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700">
-          Archive Entity
+          {entity.type === 'Organization' ? 'Archive Org' : 'Archive Entity'}
         </button>
       </div>
     </div>
