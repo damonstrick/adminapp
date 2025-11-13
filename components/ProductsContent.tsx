@@ -12,7 +12,8 @@ interface ProductItem {
 
 const products: ProductItem[] = [
   { icon: 'pen-line', title: 'Clear Contracts', activeMembers: 142, groups: 2, configureHref: '/permissions/products/clear-contracts' },
-  { icon: 'chart-pie', title: 'Analyze', activeMembers: 142, groups: 2, configureHref: '/permissions/products/analyze' },
+  { icon: 'chart-pie', title: 'Analyze + Search', activeMembers: 142, groups: 2, configureHref: '/permissions/products/analyze' },
+  { icon: 'database', title: 'Direct Data Access', activeMembers: 142, groups: 2 },
 ];
 
 export default function ProductsContent() {
@@ -86,6 +87,12 @@ function getIcon(icon: string) {
         <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+        </svg>
+      );
+    case 'database':
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
         </svg>
       );
     default:
