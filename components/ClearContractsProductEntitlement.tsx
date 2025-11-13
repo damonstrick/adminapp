@@ -344,7 +344,7 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Features Section - Individual toggles at top */}
-      <div className="box-border flex flex-col gap-0 items-start px-0 py-6 relative shrink-0 w-full">
+      <div className="box-border flex flex-col gap-0 items-start px-0 relative shrink-0 w-full">
         {/* AskTQ Contract */}
         <div className="w-full flex items-center gap-2 pt-[24px] pb-[24px] border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
