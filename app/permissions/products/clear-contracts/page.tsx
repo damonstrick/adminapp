@@ -1,3 +1,5 @@
+'use client';
+
 import ClearContractsProductEntitlement from '@/components/ClearContractsProductEntitlement';
 
 export default function ClearContractsProductEntitlementPage() {
