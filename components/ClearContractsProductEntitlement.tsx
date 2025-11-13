@@ -344,9 +344,9 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Features Section - Individual toggles at top */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-4 items-start px-0 py-6 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-0 items-start px-0 py-6 relative shrink-0 w-full">
         {/* AskTQ Contract */}
-        <div className="w-full flex items-center gap-2 h-6">
+        <div className="w-full flex items-center gap-2 h-6 pb-4 border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">AskTQ Contract</p>
             {isAskTqContractDirty && (
@@ -373,12 +373,12 @@ export default function ClearContractsProductEntitlement() {
           </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={askTqContract} onChange={(e) => setAskTqContract(e.target.checked)} />
-            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
+            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
           </label>
         </div>
         
         {/* AskTQ Payer Policy */}
-        <div className="w-full flex items-center gap-2 h-6">
+        <div className="w-full flex items-center gap-2 h-6 pt-4 pb-4 border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">AskTQ Payer Policy</p>
             {isAskTqPayerPolicyDirty && (
@@ -405,12 +405,12 @@ export default function ClearContractsProductEntitlement() {
           </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={askTqPayerPolicy} onChange={(e) => setAskTqPayerPolicy(e.target.checked)} />
-            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
+            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
           </label>
         </div>
         
         {/* Rate Summary */}
-        <div className="w-full flex items-center gap-2 h-6">
+        <div className="w-full flex items-center gap-2 h-6 pt-4 pb-4 border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">Rate Summary</p>
             {isRateSummaryDirty && (
@@ -437,12 +437,12 @@ export default function ClearContractsProductEntitlement() {
           </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={rateSummary} onChange={(e) => setRateSummary(e.target.checked)} />
-            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
+            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
           </label>
         </div>
         
         {/* Scenario Modeling */}
-        <div className="w-full flex items-center gap-2 h-6">
+        <div className="w-full flex items-center gap-2 h-6 pt-4 pb-4 border-b border-[#e3e7ea] border-solid">
           <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">Scenario Modeling</p>
             {isScenarioModelingDirty && (
@@ -469,7 +469,7 @@ export default function ClearContractsProductEntitlement() {
           </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={scenarioModeling} onChange={(e) => setScenarioModeling(e.target.checked)} />
-            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
+            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
           </label>
         </div>
       </div>
