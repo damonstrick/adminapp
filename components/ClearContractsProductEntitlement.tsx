@@ -477,7 +477,7 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Seat Configuration Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setSeatConfigOpen(!seatConfigOpen)}
@@ -565,7 +565,7 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Rate Limit Configuration Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setRateLimitOpen(!rateLimitOpen)}
@@ -623,7 +623,7 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Processes Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setProcessesOpen(!processesOpen)}
@@ -744,7 +744,7 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Preferences Section */}
-      <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setPreferencesOpen(!preferencesOpen)}
