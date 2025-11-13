@@ -702,7 +702,7 @@ export default function ProductEntitlement() {
           </label>
         </div>
         {analyzeOpen && (
-          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full" style={{ paddingLeft: '16px' }}>
+          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4">
             {/* Custom Service Lines */}
             <div className="flex items-center justify-between relative shrink-0 w-full">
               <p className="font-medium text-xs text-[#121313]">Custom Service Lines</p>
