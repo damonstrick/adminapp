@@ -896,7 +896,6 @@ export default function ClearContractsProductEntitlement() {
         {claimsDataSchemaOpen && (
           <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
             <div className="flex flex-col gap-2 items-start relative shrink-0 w-full">
-              <p className="font-semibold text-sm text-[#121313]">Claims Data Schema</p>
               <p className="text-xs text-[#6e8081] leading-4">
                 Upload a custom claims data schema to define how incoming data is mapped and interpreted.
               </p>
