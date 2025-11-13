@@ -16,6 +16,7 @@ const entities: { [key: string]: { name: string; type: string; access: string[];
   '3': { name: 'Community Care Clinic', type: 'Clinic', access: ['Analyze'], members: 45, id: '3' },
   '4': { name: 'Metro General Hospital', type: 'Hospital', access: ['Clear Contracts', 'Analyze'], members: 289, id: '4' },
   '5': { name: 'Riverside Medical Group', type: 'Medical Group', access: ['Clear Contracts'], members: 156, id: '5' },
+  'organization-1': { name: 'CommonSpirit Health', type: 'Organization', access: ['Clear Contracts', 'Analyze'], members: 156, id: 'organization-1' },
 };
 
 const ALL_PRODUCTS = ['Analyze', 'Clear Contracts'];
@@ -164,17 +165,29 @@ export default function EntityProfile({ entityId }: EntityProfileProps) {
         <div className="basis-0 flex flex-col gap-6 grow items-start min-h-px min-w-px relative shrink-0">
           {/* Breadcrumbs */}
           <div className="flex gap-1 items-center text-xs text-[#6e8081] relative shrink-0">
-            <Link href="/permissions/entities" className="hover:underline">
-              Entities
-            </Link>
-            <span>/</span>
-            <span className="text-[#121313]">{entity.name}</span>
+            {entity.type === 'Organization' ? (
+              <>
+                <Link href="/permissions" className="hover:underline">
+                  Overview
+                </Link>
+                <span>/</span>
+                <span className="text-[#121313]">{entity.name}</span>
+              </>
+            ) : (
+              <>
+                <Link href="/permissions/entities" className="hover:underline">
+                  Entities
+                </Link>
+                <span>/</span>
+                <span className="text-[#121313]">{entity.name}</span>
+              </>
+            )}
           </div>
 
           {/* Header with back button and title */}
           <div className="flex items-center justify-between relative shrink-0 w-full">
             <div className="basis-0 flex gap-1 grow items-center min-h-px min-w-px relative shrink-0">
-              <Link href="/permissions/entities" className="flex items-center justify-center w-8 h-8 rounded hover:bg-[#f0f2f2] shrink-0">
+              <Link href={entity.type === 'Organization' ? "/permissions" : "/permissions/entities"} className="flex items-center justify-center w-8 h-8 rounded hover:bg-[#f0f2f2] shrink-0">
                 <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
