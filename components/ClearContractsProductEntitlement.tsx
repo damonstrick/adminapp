@@ -748,7 +748,7 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Preferences Section */}
-      <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setPreferencesOpen(!preferencesOpen)}
@@ -869,7 +869,7 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Claims Data Schema Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
+      <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setClaimsDataSchemaOpen(!claimsDataSchemaOpen)}
