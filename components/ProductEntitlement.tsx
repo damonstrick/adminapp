@@ -20,7 +20,6 @@ interface Condition {
 const SCOPE_TYPES: ScopeType[] = ['State', 'Billing Code', 'CBSA', 'NPI'];
 
 export default function ProductEntitlement() {
-  const [analyzeOpen, setAnalyzeOpen] = useState(true);
   const [seatConfigOpen, setSeatConfigOpen] = useState(true);
   const [rateLimitOpen, setRateLimitOpen] = useState(true);
   const [dataConfigOpen, setDataConfigOpen] = useState(true);
@@ -28,6 +27,7 @@ export default function ProductEntitlement() {
   
   // Analyze section state
   const [initialAnalyze, setInitialAnalyze] = useState({
+    analyzeOpen: true,
     customServiceLines: false,
     customUtilizationProfile: false,
     memberPreferences: false,
@@ -35,6 +35,7 @@ export default function ProductEntitlement() {
     exportRateLimit: '',
   });
   
+  const [analyzeOpen, setAnalyzeOpen] = useState(initialAnalyze.analyzeOpen);
   const [customServiceLines, setCustomServiceLines] = useState(initialAnalyze.customServiceLines);
   const [customUtilizationProfile, setCustomUtilizationProfile] = useState(initialAnalyze.customUtilizationProfile);
   const [memberPreferences, setMemberPreferences] = useState(initialAnalyze.memberPreferences);
@@ -47,6 +48,7 @@ export default function ProductEntitlement() {
   
   // Analyze section dirty state
   const isAnalyzeDirty = JSON.stringify({
+    analyzeOpen,
     customServiceLines,
     customUtilizationProfile,
     memberPreferences,
@@ -56,6 +58,7 @@ export default function ProductEntitlement() {
   
   const handleSaveAnalyze = () => {
     setInitialAnalyze({
+      analyzeOpen,
       customServiceLines,
       customUtilizationProfile,
       memberPreferences,
@@ -63,6 +66,7 @@ export default function ProductEntitlement() {
       exportRateLimit,
     });
     console.log('Saving analyze section:', {
+      analyzeOpen,
       customServiceLines,
       customUtilizationProfile,
       memberPreferences,
