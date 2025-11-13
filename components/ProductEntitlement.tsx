@@ -869,6 +869,85 @@ export default function ProductEntitlement() {
         )}
       </div>
 
+      {/* Search Section */}
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 relative shrink-0 w-full" style={{ paddingBottom: searchOpen ? '24px' : '0px' }}>
+        <div className="w-full flex items-center gap-2 pt-[24px]" style={{ marginBottom: searchOpen ? '16px' : '0px', paddingBottom: searchOpen ? '0px' : '24px' }}>
+          <button
+            onClick={() => setSearchOpen(!searchOpen)}
+            className="flex items-center gap-2 flex-1 h-6"
+          >
+            <p className="font-semibold text-sm text-[#121313]">Search</p>
+            {isSearchDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+            {isSearchDirty && savedSection !== 'search' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveSearch();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'search' || (savedSection === 'all')) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'search' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer h-6">
+            <input type="checkbox" className="sr-only peer" checked={searchOpen} onChange={(e) => setSearchOpen(e.target.checked)} />
+            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+          </label>
+        </div>
+        {searchOpen && (
+          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4">
+            {/* Custom Service Lines */}
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">Custom Service Lines</p>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={searchCustomServiceLines} onChange={(e) => setSearchCustomServiceLines(e.target.checked)} />
+                <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+              </label>
+            </div>
+            
+            {/* Member Preferences */}
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">Member Preferences</p>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={searchMemberPreferences} onChange={(e) => setSearchMemberPreferences(e.target.checked)} />
+                <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+              </label>
+            </div>
+            
+            {/* Export Data */}
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">Export Data</p>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={exportData} onChange={(e) => setExportData(e.target.checked)} />
+                <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+              </label>
+            </div>
+            
+            {/* Export Rate Limit */}
+            <div className="flex items-center justify-between relative shrink-0 w-full">
+              <p className="font-medium text-xs text-[#121313]">Export Rate Limit</p>
+              <input
+                type="text"
+                value={searchExportRateLimit}
+                onChange={(e) => setSearchExportRateLimit(e.target.value)}
+                placeholder="10"
+                className="bg-white border border-[#e3e7ea] rounded w-20 px-3 py-2 text-xs text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Data Configuration Section */}
       <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
         <button
