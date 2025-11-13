@@ -82,6 +82,12 @@ export default function ClearContractsProductEntitlement() {
   const [savedSectionsFromAll, setSavedSectionsFromAll] = useState<string[]>([]);
   const [fadingOut, setFadingOut] = useState<string | null>(null);
   
+  // Individual feature dirty states
+  const isAskTqContractDirty = askTqContract !== initialFeatures.askTqContract;
+  const isAskTqPayerPolicyDirty = askTqPayerPolicy !== initialFeatures.askTqPayerPolicy;
+  const isRateSummaryDirty = rateSummary !== initialFeatures.rateSummary;
+  const isScenarioModelingDirty = scenarioModeling !== initialFeatures.scenarioModeling;
+  
   // Dirty state tracking
   const isFeaturesDirty = JSON.stringify({
     askTqContract,
@@ -120,7 +126,7 @@ export default function ClearContractsProductEntitlement() {
     numberOfSeats,
   }) !== JSON.stringify(initialSeatConfig);
   
-  const dirtySectionsCount = [isFeaturesDirty, isSeatConfigDirty, isRateLimitDirty, isProcessesDirty, isPreferencesDirty].filter(Boolean).length;
+  const dirtySectionsCount = [isAskTqContractDirty, isAskTqPayerPolicyDirty, isRateSummaryDirty, isScenarioModelingDirty, isSeatConfigDirty, isRateLimitDirty, isProcessesDirty, isPreferencesDirty].filter(Boolean).length;
   
   const handleSaveFeatures = () => {
     setInitialFeatures({
@@ -139,6 +145,46 @@ export default function ClearContractsProductEntitlement() {
     setFadingOut(null);
     setTimeout(() => {
       setFadingOut('features');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+  
+  const handleSaveAskTqContract = () => {
+    setInitialFeatures(prev => ({ ...prev, askTqContract }));
+    setSavedSection('askTqContract');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('askTqContract');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+  
+  const handleSaveAskTqPayerPolicy = () => {
+    setInitialFeatures(prev => ({ ...prev, askTqPayerPolicy }));
+    setSavedSection('askTqPayerPolicy');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('askTqPayerPolicy');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+  
+  const handleSaveRateSummary = () => {
+    setInitialFeatures(prev => ({ ...prev, rateSummary }));
+    setSavedSection('rateSummary');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('rateSummary');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+  
+  const handleSaveScenarioModeling = () => {
+    setInitialFeatures(prev => ({ ...prev, scenarioModeling }));
+    setSavedSection('scenarioModeling');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('scenarioModeling');
       setTimeout(() => setSavedSection(null), 300);
     }, 1700);
   };
@@ -234,13 +280,20 @@ export default function ClearContractsProductEntitlement() {
   const handleSaveAll = () => {
     // Track which sections were dirty before saving
     const sectionsToSave: string[] = [];
-    if (isFeaturesDirty) sectionsToSave.push('features');
+    if (isAskTqContractDirty) sectionsToSave.push('askTqContract');
+    if (isAskTqPayerPolicyDirty) sectionsToSave.push('askTqPayerPolicy');
+    if (isRateSummaryDirty) sectionsToSave.push('rateSummary');
+    if (isScenarioModelingDirty) sectionsToSave.push('scenarioModeling');
     if (isSeatConfigDirty) sectionsToSave.push('seatConfig');
     if (isRateLimitDirty) sectionsToSave.push('rateLimit');
     if (isProcessesDirty) sectionsToSave.push('processes');
     if (isPreferencesDirty) sectionsToSave.push('preferences');
     
-    handleSaveFeatures();
+    // Save individual features
+    if (isAskTqContractDirty) handleSaveAskTqContract();
+    if (isAskTqPayerPolicyDirty) handleSaveAskTqPayerPolicy();
+    if (isRateSummaryDirty) handleSaveRateSummary();
+    if (isScenarioModelingDirty) handleSaveScenarioModeling();
     handleSaveSeatConfig();
     handleSaveRateLimit();
     handleSaveProcesses();
@@ -291,66 +344,133 @@ export default function ClearContractsProductEntitlement() {
       </div>
 
       {/* Features Section - Individual toggles at top */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-8 items-start px-0 py-6 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-4 items-start px-0 py-6 relative shrink-0 w-full">
         {/* AskTQ Contract */}
-        <div className="flex gap-2 items-center relative shrink-0 w-full">
-          <div className="flex-1">
+        <div className="w-full flex items-center gap-2 h-6">
+          <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">AskTQ Contract</p>
+            {isAskTqContractDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+            {isAskTqContractDirty && savedSection !== 'askTqContract' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveAskTqContract();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'askTqContract' || (savedSection === 'all' && savedSectionsFromAll.includes('askTqContract'))) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'askTqContract' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
+          <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={askTqContract} onChange={(e) => setAskTqContract(e.target.checked)} />
             <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
           </label>
         </div>
         
         {/* AskTQ Payer Policy */}
-        <div className="flex gap-2 items-center relative shrink-0 w-full">
-          <div className="flex-1">
+        <div className="w-full flex items-center gap-2 h-6">
+          <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">AskTQ Payer Policy</p>
+            {isAskTqPayerPolicyDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+            {isAskTqPayerPolicyDirty && savedSection !== 'askTqPayerPolicy' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveAskTqPayerPolicy();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'askTqPayerPolicy' || (savedSection === 'all' && savedSectionsFromAll.includes('askTqPayerPolicy'))) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'askTqPayerPolicy' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
+          <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={askTqPayerPolicy} onChange={(e) => setAskTqPayerPolicy(e.target.checked)} />
             <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
           </label>
         </div>
         
         {/* Rate Summary */}
-        <div className="flex gap-2 items-center relative shrink-0 w-full">
-          <div className="flex-1">
+        <div className="w-full flex items-center gap-2 h-6">
+          <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">Rate Summary</p>
+            {isRateSummaryDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+            {isRateSummaryDirty && savedSection !== 'rateSummary' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveRateSummary();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'rateSummary' || (savedSection === 'all' && savedSectionsFromAll.includes('rateSummary'))) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'rateSummary' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
+          <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={rateSummary} onChange={(e) => setRateSummary(e.target.checked)} />
             <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
           </label>
         </div>
         
         {/* Scenario Modeling */}
-        <div className="flex gap-2 items-center relative shrink-0 w-full">
-          <div className="flex-1">
+        <div className="w-full flex items-center gap-2 h-6">
+          <button className="flex items-center gap-2 flex-1 h-6">
             <p className="font-semibold text-sm text-[#121313]">Scenario Modeling</p>
+            {isScenarioModelingDirty && (
+              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+            )}
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+            {isScenarioModelingDirty && savedSection !== 'scenarioModeling' && savedSection !== 'all' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveScenarioModeling();
+                }}
+                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+              >
+                Save
+              </button>
+            )}
+            {(savedSection === 'scenarioModeling' || (savedSection === 'all' && savedSectionsFromAll.includes('scenarioModeling'))) && (
+              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'scenarioModeling' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                <ShinyText text="Saved" speed={3} />
+              </div>
+            )}
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
+          <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={scenarioModeling} onChange={(e) => setScenarioModeling(e.target.checked)} />
             <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
           </label>
-        </div>
-        
-        {/* Save button for features */}
-        <div className="w-full flex justify-end">
-          {isFeaturesDirty && savedSection !== 'features' && savedSection !== 'all' && (
-            <button
-              onClick={handleSaveFeatures}
-              className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256]"
-            >
-              Save
-            </button>
-          )}
-          {(savedSection === 'features' || (savedSection === 'all' && savedSectionsFromAll.includes('features'))) && (
-            <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'features' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-              <ShinyText text="Saved" speed={3} />
-            </div>
-          )}
         </div>
       </div>
 
