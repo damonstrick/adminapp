@@ -38,48 +38,24 @@ export default function ProductsContent() {
                 <p className="font-semibold leading-5 relative shrink-0 text-[#121313] text-sm tracking-[0.14px]">
                   {product.title}
                 </p>
-                <div className="flex flex-wrap gap-3 items-start relative shrink-0 w-full">
-                  <div className="flex gap-1 items-center leading-4 relative shrink-0 text-xs tracking-[0.12px]">
-                    <p className="font-normal relative shrink-0 text-[rgba(0,0,0,0.5)]">
-                      Members:
-                    </p>
-                    <p className="font-medium relative shrink-0 text-[#121313]">
-                      {product.activeMembers}
-                    </p>
-                  </div>
-                  <div className="flex gap-1 items-center leading-4 relative shrink-0 text-xs tracking-[0.12px]">
-                    <p className="font-normal relative shrink-0 text-[rgba(0,0,0,0.5)]">
-                      Groups:
-                    </p>
-                    <p className="font-medium relative shrink-0 text-[#121313]">
-                      {product.groups}
-                    </p>
-                  </div>
-                </div>
               </div>
               
               {/* Buttons */}
               <div className="flex gap-2 items-start relative shrink-0 w-full">
-                <button className="flex-1 bg-white border border-[#e3e7ea] border-solid box-border flex gap-1 h-6 items-center justify-center px-2 py-1 rounded text-xs font-medium text-[#121313] hover:bg-[#f0f2f2]">
-                  <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <span>Members</span>
-                </button>
                 {product.configureHref ? (
                   <Link
                     href={product.configureHref}
-                    className="flex-1 bg-[#16696d] flex gap-1 h-6 items-center justify-center px-2 py-1 rounded text-xs font-medium text-white hover:bg-[#0d5256]"
+                    className="flex-1 bg-white border border-[#e3e7ea] border-solid box-border flex gap-1 h-6 items-center justify-center px-2 py-1 rounded text-xs font-medium text-[#121313] hover:bg-[#f0f2f2]"
                   >
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     <span>Configure</span>
                   </Link>
                 ) : (
-                  <button className="flex-1 bg-[#16696d] flex gap-1 h-6 items-center justify-center px-2 py-1 rounded text-xs font-medium text-white hover:bg-[#0d5256]">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <button className="flex-1 bg-white border border-[#e3e7ea] border-solid box-border flex gap-1 h-6 items-center justify-center px-2 py-1 rounded text-xs font-medium text-[#121313] hover:bg-[#f0f2f2]">
+                    <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
