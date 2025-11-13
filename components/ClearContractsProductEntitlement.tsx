@@ -10,6 +10,10 @@ export default function ClearContractsProductEntitlement() {
   const [seatConfigOpen, setSeatConfigOpen] = useState(true);
   const [rateLimitOpen, setRateLimitOpen] = useState(true);
   const [processesOpen, setProcessesOpen] = useState(true);
+  const [claimsDataSchemaOpen, setClaimsDataSchemaOpen] = useState(true);
+  
+  // Claims Data Schema state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   // Seat Configuration state
   const [initialSeatConfig, setInitialSeatConfig] = useState({
@@ -859,6 +863,66 @@ export default function ClearContractsProductEntitlement() {
                 <input type="checkbox" className="sr-only peer" checked={renewalsMs2} onChange={(e) => setRenewalsMs2(e.target.checked)} />
                 <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d]"></div>
               </label>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Claims Data Schema Section */}
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
+        <div className="w-full flex items-center gap-2 mb-4 h-6">
+          <button
+            onClick={() => setClaimsDataSchemaOpen(!claimsDataSchemaOpen)}
+            className="flex items-center gap-2 flex-1 h-6"
+          >
+            <p className="font-semibold text-sm text-[#121313]">Claims Data Schema</p>
+          </button>
+          <div className="w-[60px] h-6 flex items-center justify-center">
+          </div>
+          <button
+            onClick={() => setClaimsDataSchemaOpen(!claimsDataSchemaOpen)}
+            className="flex items-center h-6"
+          >
+            <svg
+              className={`w-5 h-5 text-[#121313] transition-transform ${claimsDataSchemaOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+        {claimsDataSchemaOpen && (
+          <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
+            <div className="flex flex-col gap-2 items-start relative shrink-0 w-full">
+              <p className="font-semibold text-sm text-[#121313]">Claims Data Schema</p>
+              <p className="text-xs text-[#6e8081] leading-4">
+                Upload a custom claims data schema to define how incoming data is mapped and interpreted.
+              </p>
+            </div>
+            <div className="flex gap-6 h-14 items-end relative rounded-lg shrink-0 w-full">
+              <div className="basis-0 bg-[#f7f8f8] box-border flex gap-4 grow items-center min-h-px min-w-px p-3 relative rounded-lg shrink-0">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setSelectedFile(file);
+                    }}
+                  />
+                  <div className="bg-[#16696d] flex gap-2 h-8 items-center justify-center max-h-8 px-3 py-2 relative rounded shrink-0">
+                    <p className="font-medium leading-4 not-italic relative shrink-0 text-white text-xs text-center whitespace-pre">
+                      Choose File
+                    </p>
+                  </div>
+                </label>
+                <p className="basis-0 font-normal grow leading-4 min-h-px min-w-px not-italic relative shrink-0 text-[#6e8081] text-xs">
+                  {selectedFile ? selectedFile.name : 'Upload .pdf, .doc, or .txt'}
+                </p>
+              </div>
             </div>
           </div>
         )}
