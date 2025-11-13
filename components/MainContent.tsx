@@ -24,10 +24,10 @@ export default function MainContent() {
                     </svg>
                   </div>
                   <div className="basis-0 flex flex-col gap-0.5 grow items-start min-h-px min-w-px relative shrink-0">
-                    <p className="font-medium justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#121313] text-xs tracking-[0.12px] w-full">
+                    <p className="font-medium leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#121313] text-xs tracking-[0.12px] w-full">
                       Organization Details
                     </p>
-                    <p className="font-normal justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#6e8081] text-xs tracking-[0.12px] w-full">
+                    <p className="font-normal leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#6e8081] text-xs tracking-[0.12px] w-full">
                       View and edit organization details
                     </p>
                   </div>
