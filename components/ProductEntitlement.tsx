@@ -80,6 +80,53 @@ export default function ProductEntitlement() {
       setTimeout(() => setSavedSection(null), 300);
     }, 1700);
   };
+  
+  // Search section state
+  const [initialSearch, setInitialSearch] = useState({
+    searchOpen: true,
+    customServiceLines: false,
+    memberPreferences: false,
+    exportData: false,
+    exportRateLimit: '',
+  });
+  
+  const [searchOpen, setSearchOpen] = useState(initialSearch.searchOpen);
+  const [searchCustomServiceLines, setSearchCustomServiceLines] = useState(initialSearch.customServiceLines);
+  const [searchMemberPreferences, setSearchMemberPreferences] = useState(initialSearch.memberPreferences);
+  const [exportData, setExportData] = useState(initialSearch.exportData);
+  const [searchExportRateLimit, setSearchExportRateLimit] = useState(initialSearch.exportRateLimit);
+  
+  // Search section dirty state
+  const isSearchDirty = JSON.stringify({
+    searchOpen,
+    customServiceLines: searchCustomServiceLines,
+    memberPreferences: searchMemberPreferences,
+    exportData,
+    exportRateLimit: searchExportRateLimit,
+  }) !== JSON.stringify(initialSearch);
+  
+  const handleSaveSearch = () => {
+    setInitialSearch({
+      searchOpen,
+      customServiceLines: searchCustomServiceLines,
+      memberPreferences: searchMemberPreferences,
+      exportData,
+      exportRateLimit: searchExportRateLimit,
+    });
+    console.log('Saving search section:', {
+      searchOpen,
+      customServiceLines: searchCustomServiceLines,
+      memberPreferences: searchMemberPreferences,
+      exportData,
+      exportRateLimit: searchExportRateLimit,
+    });
+    setSavedSection('search');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('search');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
 
   // Initialize with empty state
   const [conditions, setConditions] = useState<Condition[]>([]);
@@ -818,140 +865,6 @@ export default function ProductEntitlement() {
                 className="bg-white border border-[#e3e7ea] rounded w-20 px-3 py-2 text-xs text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
               />
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Seat Configuration Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setSeatConfigOpen(!seatConfigOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Seat Configuration</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${seatConfigOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {seatConfigOpen && (
-          <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-            {/* Toggle Buttons */}
-            <div className="flex gap-2 items-start relative shrink-0">
-              <button
-                onClick={() => setSeatMode('unlimited')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                  seatMode === 'unlimited'
-                    ? 'bg-[#16696d] text-white'
-                    : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
-                }`}
-              >
-                Unlimited
-              </button>
-              <button
-                onClick={() => setSeatMode('custom')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                  seatMode === 'custom'
-                    ? 'bg-[#16696d] text-white'
-                    : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
-                }`}
-              >
-                Custom
-              </button>
-            </div>
-
-            {/* Number of Seats Input */}
-            <div className="w-full">
-              <label className="block text-xs font-medium text-[#121313] mb-2">Number of Seats</label>
-              <input
-                type="number"
-                placeholder="Hint Label"
-                className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
-              />
-            </div>
-
-            {/* Seat Usage */}
-            <div className="bg-white border border-gray-200 rounded-[10px] p-4 w-full">
-              <div className="flex items-center gap-2 mb-4">
-                <p className="font-semibold text-sm text-[#101828]">Seat Usage</p>
-                <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                  15
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-                {/* Admin */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Admin</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">8</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '25%' }} />
-                  </div>
-                </div>
-                {/* Editor */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Editor</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">4</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '50%' }} />
-                  </div>
-                </div>
-                {/* Viewer */}
-                <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                  <div className="flex items-center gap-1 justify-between w-full">
-                    <p className="font-medium text-[11px] text-[#6e8081]">Viewer</p>
-                    <p className="font-medium text-[11px] text-[#6e8081]">3</p>
-                  </div>
-                  <div className="h-1 relative shrink-0 w-full">
-                    <div className="absolute bg-[#f0f2f2] inset-0 rounded-full" />
-                    <div className="absolute bg-[#36c5ba] bottom-0 left-0 rounded-full top-0" style={{ right: '75%' }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Rate Limit Configuration Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
-        <button
-          onClick={() => setRateLimitOpen(!rateLimitOpen)}
-          className="w-full flex items-center gap-2 mb-4"
-        >
-          <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <p className="font-semibold text-sm text-[#121313]">Rate Limit Configuration</p>
-          <svg
-            className={`w-5 h-5 text-[#121313] transition-transform ml-auto ${rateLimitOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {rateLimitOpen && (
-          <div className="w-full">
-            <label className="block text-xs font-medium text-[#121313] mb-2">Export Limit</label>
-            <input
-              type="text"
-              placeholder="Hint Label"
-              className="w-full px-3 py-2 border border-[#e3e7ea] rounded-md text-sm text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
-            />
           </div>
         )}
       </div>
