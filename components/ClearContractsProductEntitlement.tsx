@@ -870,36 +870,36 @@ export default function ClearContractsProductEntitlement() {
 
       {/* Claims Data Schema Section */}
       <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
-        <div className="w-full flex items-center gap-2 mb-4 h-6">
-          <button
-            onClick={() => setClaimsDataSchemaOpen(!claimsDataSchemaOpen)}
-            className="flex items-center gap-2 flex-1 h-6"
-          >
-            <p className="font-semibold text-sm text-[#121313]">Claims Data Schema</p>
-          </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-          </div>
-          <button
-            onClick={() => setClaimsDataSchemaOpen(!claimsDataSchemaOpen)}
-            className="flex items-center h-6"
-          >
-            <svg
-              className={`w-5 h-5 text-[#121313] transition-transform ${claimsDataSchemaOpen ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <div className="w-full flex flex-col gap-2 mb-4">
+          <div className="w-full flex items-center gap-2 h-6">
+            <button
+              onClick={() => setClaimsDataSchemaOpen(!claimsDataSchemaOpen)}
+              className="flex items-center gap-2 flex-1 h-6"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+              <p className="font-semibold text-sm text-[#121313]">Claims Data Schema</p>
+            </button>
+            <div className="w-[60px] h-6 flex items-center justify-center">
+            </div>
+            <button
+              onClick={() => setClaimsDataSchemaOpen(!claimsDataSchemaOpen)}
+              className="flex items-center h-6"
+            >
+              <svg
+                className={`w-5 h-5 text-[#121313] transition-transform ${claimsDataSchemaOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <p className="text-xs text-[#6e8081] leading-4">
+            Upload a custom claims data schema to define how incoming data is mapped and interpreted.
+          </p>
         </div>
         {claimsDataSchemaOpen && (
           <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-            <div className="flex flex-col gap-2 items-start relative shrink-0 w-full">
-              <p className="text-xs text-[#6e8081] leading-4">
-                Upload a custom claims data schema to define how incoming data is mapped and interpreted.
-              </p>
-            </div>
             <div className="flex gap-6 h-14 items-end relative rounded-lg shrink-0 w-full">
               <div className="basis-0 bg-[#f7f8f8] box-border flex gap-4 grow items-center min-h-px min-w-px p-3 relative rounded-lg shrink-0">
                 <label className="cursor-pointer">
