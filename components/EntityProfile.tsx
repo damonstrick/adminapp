@@ -71,7 +71,9 @@ export default function EntityProfile({ entityId }: EntityProfileProps) {
   const isProductsDirty = JSON.stringify([...products].sort()) !== JSON.stringify([...initialProducts].sort());
   const isMembersDirty = JSON.stringify([...members].sort()) !== JSON.stringify([...initialMembers].sort());
   
-  const dirtySectionsCount = [isBasicInfoDirty, isPointOfContactDirty, isProductsDirty, isMembersDirty].filter(Boolean).length;
+  const dirtySectionsCount = entity.type === 'Organization' 
+    ? [isBasicInfoDirty, isPointOfContactDirty].filter(Boolean).length
+    : [isBasicInfoDirty, isPointOfContactDirty, isProductsDirty, isMembersDirty].filter(Boolean).length;
   
   const toggleProduct = (product: string) => {
     if (products.includes(product)) {
@@ -494,6 +496,7 @@ export default function EntityProfile({ entityId }: EntityProfileProps) {
       </div>
 
       {/* Assign Products Section */}
+      {entity.type !== 'Organization' && (
       <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
@@ -594,8 +597,10 @@ export default function EntityProfile({ entityId }: EntityProfileProps) {
           </div>
         )}
       </div>
+      )}
 
       {/* Add Members Section */}
+      {entity.type !== 'Organization' && (
       <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
@@ -680,6 +685,7 @@ export default function EntityProfile({ entityId }: EntityProfileProps) {
           </div>
         )}
       </div>
+      )}
 
       {/* Save All Button - appears when multiple sections have changes */}
       {dirtySectionsCount > 1 && (
