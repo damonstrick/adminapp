@@ -13,7 +13,7 @@ interface ProductItem {
 const products: ProductItem[] = [
   { icon: 'pen-line', title: 'Clear Contracts', activeMembers: 142, groups: 2, configureHref: '/permissions/products/clear-contracts' },
   { icon: 'chart-pie', title: 'Analyze + Search', activeMembers: 142, groups: 2, configureHref: '/permissions/products/analyze' },
-  { icon: 'database', title: 'Direct Data Access', activeMembers: 142, groups: 2 },
+  { icon: 'database', title: 'Direct Data Access', activeMembers: 142, groups: 2, configureHref: '/permissions/products/direct-data-access' },
 ];
 
 export default function ProductsContent() {
