@@ -949,7 +949,7 @@ export default function ProductEntitlement() {
       </div>
 
       {/* Data Configuration Section */}
-      <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-4 relative shrink-0 w-full">
         <div className="w-full flex flex-col gap-2 mb-4">
           <div className="w-full flex items-center gap-2">
             <button
