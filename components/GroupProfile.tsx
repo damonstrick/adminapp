@@ -200,7 +200,7 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
       )}
 
       {/* Basic Info Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <div className="flex items-center gap-2 flex-1 h-6">
             <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,7 +272,7 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
       </div>
 
       {/* Members and Products Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <div className="flex items-center gap-2 flex-1 h-6">
             <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -517,7 +517,7 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
       </div>
 
       {/* Members Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <div className="flex items-center gap-2 flex-1 h-6">
             <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -570,7 +570,7 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
       )}
 
       {/* Group Actions Section */}
-      <div className="box-border flex flex-col gap-4 items-start pb-0 pt-6 px-0 relative shrink-0 w-full">
+      <div className="box-border flex flex-col gap-4 items-start pb-[24px] pt-6 px-0 relative shrink-0 w-full">
         <div className="bg-white border border-[#e3e7ea] border-solid relative rounded-lg shrink-0 w-full cursor-pointer hover:bg-[#f7f8f8]">
           <div className="flex flex-col items-start overflow-clip relative rounded-[inherit] w-full">
             <div className="box-border flex flex-col gap-2 items-center justify-center p-3 relative shrink-0 w-full">
