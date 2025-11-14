@@ -8,6 +8,7 @@ import ShinyText from './ShinyText';
 import PRODUCT_LOGOS from './productLogos';
 import PhiAwarenessBanner from './PhiAwarenessBanner';
 import { usePhiBanner } from './PhiBannerContext';
+import DataTable from './DataTable';
 
 interface GroupProfileProps {
   groupId: string;
@@ -19,6 +20,38 @@ const groups: { [key: string]: { name: string; description: string; members: num
 };
 
 const ALL_PRODUCTS = ['Analyze', 'Clear Contracts'];
+
+interface GroupMember {
+  name: string;
+  email: string;
+  department: string;
+  groups: number;
+  status: string;
+  id: string;
+}
+
+const GROUP_MEMBERS: GroupMember[] = [
+  { name: 'Sarah Johnson', email: 'sarah.johnson@commonspirit.org', department: 'Sales', groups: 3, status: 'Active', id: 'sj-001' },
+  { name: 'Michael Chen', email: 'michael.chen@commonspirit.org', department: 'Marketing', groups: 5, status: 'Active', id: 'mc-002' },
+  { name: 'Emily Rodriguez', email: 'emily.rodriguez@commonspirit.org', department: 'Operations', groups: 2, status: 'Active', id: 'er-003' },
+  { name: 'David Kim', email: 'david.kim@commonspirit.org', department: 'IT', groups: 4, status: 'Active', id: 'dk-004' },
+  { name: 'Jessica Martinez', email: 'jessica.martinez@commonspirit.org', department: 'HR', groups: 1, status: 'Active', id: 'jm-005' },
+  { name: 'Robert Taylor', email: 'robert.taylor@commonspirit.org', department: 'Finance', groups: 6, status: 'Active', id: 'rt-006' },
+  { name: 'Amanda White', email: 'amanda.white@commonspirit.org', department: 'Sales', groups: 3, status: 'Active', id: 'aw-007' },
+  { name: 'James Wilson', email: 'james.wilson@commonspirit.org', department: 'Marketing', groups: 4, status: 'Active', id: 'jw-008' },
+  { name: 'Lisa Anderson', email: 'lisa.anderson@commonspirit.org', department: 'Operations', groups: 2, status: 'Active', id: 'la-009' },
+  { name: 'Christopher Brown', email: 'chris.brown@commonspirit.org', department: 'IT', groups: 5, status: 'Active', id: 'cb-010' },
+  { name: 'Michelle Davis', email: 'michelle.davis@commonspirit.org', department: 'HR', groups: 2, status: 'Active', id: 'md-011' },
+  { name: 'Daniel Garcia', email: 'daniel.garcia@commonspirit.org', department: 'Finance', groups: 4, status: 'Active', id: 'dg-012' },
+  { name: 'Jennifer Lee', email: 'jennifer.lee@commonspirit.org', department: 'Sales', groups: 3, status: 'Active', id: 'jl-013' },
+  { name: 'Matthew Harris', email: 'matthew.harris@commonspirit.org', department: 'Marketing', groups: 5, status: 'Active', id: 'mh-014' },
+  { name: 'Nicole Thompson', email: 'nicole.thompson@commonspirit.org', department: 'Operations', groups: 2, status: 'Active', id: 'nt-015' },
+  { name: 'Andrew Moore', email: 'andrew.moore@commonspirit.org', department: 'IT', groups: 4, status: 'Active', id: 'am-016' },
+  { name: 'Stephanie Clark', email: 'stephanie.clark@commonspirit.org', department: 'HR', groups: 1, status: 'Active', id: 'sc-017' },
+  { name: 'Kevin Lewis', email: 'kevin.lewis@commonspirit.org', department: 'Finance', groups: 6, status: 'Active', id: 'kl-018' },
+  { name: 'Rachel Walker', email: 'rachel.walker@commonspirit.org', department: 'Sales', groups: 3, status: 'Active', id: 'rw-019' },
+  { name: 'Brian Hall', email: 'brian.hall@commonspirit.org', department: 'Marketing', groups: 4, status: 'Active', id: 'bh-020' },
+];
 
 export default function GroupProfile({ groupId }: GroupProfileProps) {
   const { showPhiBanner } = usePhiBanner();
@@ -43,6 +76,8 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
   // Current state
   const [basicInfo, setBasicInfo] = useState(initialBasicInfo);
   const [products, setProducts] = useState<string[]>([]);
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberPage, setMemberPage] = useState(1);
   
   // Dirty state tracking
   const isBasicInfoDirty = JSON.stringify(basicInfo) !== JSON.stringify(initialBasicInfo);
@@ -154,6 +189,57 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
   const breadcrumbHref = from === 'member' && memberId 
     ? `/permissions/members/${memberId}`
     : '/permissions/groups';
+
+  const MEMBERS_PER_PAGE = 10;
+  const filteredGroupMembers = GROUP_MEMBERS.filter((member) => {
+    if (!memberSearch.trim()) return true;
+    const searchLower = memberSearch.toLowerCase();
+    return (
+      member.name.toLowerCase().includes(searchLower) ||
+      member.email.toLowerCase().includes(searchLower) ||
+      member.department.toLowerCase().includes(searchLower)
+    );
+  });
+  const totalMemberPages = Math.max(1, Math.ceil(filteredGroupMembers.length / MEMBERS_PER_PAGE) || 1);
+  const currentMemberPage = Math.min(memberPage, totalMemberPages);
+  const memberStartIndex = (currentMemberPage - 1) * MEMBERS_PER_PAGE;
+  const currentGroupMembers = filteredGroupMembers.slice(memberStartIndex, memberStartIndex + MEMBERS_PER_PAGE);
+
+  useEffect(() => {
+    if (memberPage > totalMemberPages) {
+      setMemberPage(totalMemberPages);
+    }
+  }, [memberPage, totalMemberPages]);
+
+  const memberPagination = (
+    <>
+      <button
+        onClick={() => setMemberPage((prev) => Math.max(1, prev - 1))}
+        disabled={currentMemberPage === 1}
+        className="px-3 py-1.5 border border-[#e3e7ea] rounded-lg text-xs font-medium text-[#121313] hover:bg-[#f0f2f2] disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+      {Array.from({ length: totalMemberPages }, (_, i) => i + 1).map((page) => (
+        <button
+          key={page}
+          onClick={() => setMemberPage(page)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+            currentMemberPage === page ? 'bg-[#16696d] text-white' : 'border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
+          }`}
+        >
+          {page}
+        </button>
+      ))}
+      <button
+        onClick={() => setMemberPage((prev) => Math.min(totalMemberPages, prev + 1))}
+        disabled={currentMemberPage === totalMemberPages}
+        className="px-3 py-1.5 border border-[#e3e7ea] rounded-lg text-xs font-medium text-[#121313] hover:bg-[#f0f2f2] disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+    </>
+  );
 
   return (
     <div className="bg-white flex flex-col items-start relative rounded-lg w-full">
@@ -527,33 +613,84 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
           </div>
         </div>
         <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-          <div className="bg-white border border-[#e3e7ea] border-solid h-12 relative rounded-lg shrink-0 w-full cursor-pointer hover:bg-[#f7f8f8]">
-            <div className="flex flex-col h-12 items-start justify-center overflow-clip relative rounded-[inherit] w-full">
-              <div className="box-border flex flex-col gap-2 items-center justify-center p-3 relative shrink-0 w-full">
-                <div className="flex gap-4 items-center relative shrink-0 w-full">
-                  <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
-                    <div className="overflow-clip relative shrink-0 w-4 h-4">
-                      <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          <DataTable
+            searchValue={memberSearch}
+            onSearchChange={(value) => {
+              setMemberSearch(value);
+              setMemberPage(1);
+            }}
+            searchPlaceholder="Search members..."
+            searchTableGap="12px"
+            data={currentGroupMembers}
+            pagination={memberPagination}
+            onRowClick={(member) => `/permissions/members/${member.id}`}
+            columns={[
+              {
+                header: '',
+                width: '40px',
+                render: (_, index) => (
+                  <div className="flex items-center justify-center px-2">
+                    <p className="font-normal leading-4 text-xs text-[#6e8081] text-center tracking-[0.12px] whitespace-pre">
+                      {memberStartIndex + index + 1}
+                    </p>
+                  </div>
+                ),
+              },
+              {
+                header: 'Member',
+                headerIcon: (
+                  <svg className="w-3 h-3 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                  </svg>
+                ),
+                render: (member) => (
+                  <div className="flex flex-col gap-2 items-start">
+                    <p className="overflow-ellipsis overflow-hidden relative shrink-0 text-xs text-[#121313]">{member.name}</p>
+                    <p className="overflow-ellipsis overflow-hidden relative shrink-0 text-xs text-[#6e8081]">{member.email}</p>
+                  </div>
+                ),
+              },
+              {
+                header: 'Department',
+                render: (member) => (
+                  <p className="basis-0 font-normal grow leading-4 min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-xs text-[#121313] text-nowrap tracking-[0.12px]">
+                    {member.department}
+                  </p>
+                ),
+              },
+              {
+                header: 'Groups',
+                align: 'right',
+                render: (member) => (
+                  <p className="basis-0 font-normal grow h-full leading-4 min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-xs text-[#121313] text-nowrap text-right tracking-[0.12px]">
+                    {member.groups}
+                  </p>
+                ),
+              },
+              {
+                header: 'Status',
+                render: (member) => (
+                  <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
+                    {member.status}
+                  </div>
+                ),
+              },
+              {
+                header: ' ',
+                align: 'center',
+                width: 'auto',
+                render: () => (
+                  <button className="box-border flex gap-2 items-center p-0.5 relative rounded-sm shrink-0 hover:bg-[#f0f2f2]">
+                    <div className="overflow-clip relative shrink-0 w-3 h-3">
+                      <svg className="w-3 h-3 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                       </svg>
                     </div>
-                    <div className="basis-0 flex flex-col gap-0.5 grow items-start min-h-px min-w-px relative shrink-0">
-                      <p className="font-medium justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#121313] text-xs tracking-[0.12px] w-full">
-                        Members
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex h-4 items-center justify-center relative shrink-0 w-4">
-                    <div className="flex-none rotate-90">
-                      <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  </button>
+                ),
+              },
+            ]}
+          />
         </div>
       </div>
 
