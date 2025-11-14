@@ -88,7 +88,7 @@ export default function DirectDataAccessProductEntitlement() {
             )}
           </div>
         </div>
-        <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4 border-b border-dashed border-[#e3e7ea] pb-6 pt-0">
+        <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4 pb-6 pt-0">
           {/* Hospital Data */}
           <div className="flex items-center justify-between relative shrink-0 w-full">
             <p className="font-medium text-xs text-[#121313]">Hospital Data</p>
