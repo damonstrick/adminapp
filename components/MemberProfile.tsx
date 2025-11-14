@@ -396,12 +396,12 @@ export default function MemberProfile({ memberId }: MemberProfileProps) {
                         <div className="box-border flex flex-col gap-2 items-center justify-center p-3 relative shrink-0 w-full">
                           <div className="flex gap-4 items-center relative shrink-0 w-full">
                             <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
-                              <div className="overflow-clip relative shrink-0 w-[26px] h-[26px] flex items-center justify-center">
+                              <div className="overflow-clip relative shrink-0 w-6 h-6 flex items-center justify-center">
                                 {PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS] ? (
                                   <img
                                     src={PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS]}
                                     alt={`${product} logo`}
-                                    className="w-[26px] h-[26px] object-contain"
+                                    className="w-6 h-6 object-contain"
                                   />
                                 ) : (
                                   <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
