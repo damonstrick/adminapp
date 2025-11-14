@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import ShinyText from './ShinyText';
+import SectionHeader from './SectionHeader';
 
 export default function DirectDataAccessProductEntitlement() {
   // Data Access section state
@@ -80,17 +81,10 @@ export default function DirectDataAccessProductEntitlement() {
 
       {/* Data Access Section */}
       <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
-        <div className="w-full flex flex-col gap-2 mb-4">
-          <div className="w-full flex items-center gap-2">
-            <p className="font-semibold text-sm text-[#121313]">Data Access</p>
-            {isDataAccessDirty && (
-              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-col items-start relative shrink-0 w-full pl-4 pb-6 pt-0">
+        <SectionHeader title="Data Access" showDirtyDot={isDataAccessDirty} />
+        <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4 pt-0">
           {/* Hospital Data */}
-          <div className="flex items-center justify-between relative shrink-0 w-full mb-6">
+          <div className="flex items-center justify-between relative shrink-0 w-full">
             <p className="font-medium text-xs text-[#121313]">Hospital Data</p>
             <input
               type="checkbox"
@@ -101,7 +95,7 @@ export default function DirectDataAccessProductEntitlement() {
           </div>
           
           {/* Payer Data */}
-          <div className="flex items-center justify-between relative shrink-0 w-full mb-6">
+          <div className="flex items-center justify-between relative shrink-0 w-full">
             <p className="font-medium text-xs text-[#121313]">Payer Data</p>
             <input
               type="checkbox"
@@ -141,15 +135,17 @@ export default function DirectDataAccessProductEntitlement() {
 
       {/* Trino Information Section */}
       <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-4 relative shrink-0 w-full">
-        <div className="w-full flex items-center justify-between mb-4">
-          <p className="font-semibold text-sm text-[#121313]">Trino Information</p>
-          <button className="px-4 py-2 bg-white border border-[#e3e7ea] text-[#121313] rounded-lg text-xs font-medium hover:bg-[#f0f2f2] flex items-center gap-2">
-            View In Trino
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </button>
-        </div>
+        <SectionHeader
+          title="Trino Information"
+          action={
+            <button className="px-4 py-2 bg-white border border-[#e3e7ea] text-[#121313] rounded-lg text-xs font-medium hover:bg-[#f0f2f2] flex items-center gap-2">
+              View In Trino
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </button>
+          }
+        />
         <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4">
           {/* Trino UUID */}
           <div className="flex items-center justify-between relative shrink-0 w-full h-4">
