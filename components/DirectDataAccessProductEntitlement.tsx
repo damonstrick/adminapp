@@ -16,7 +16,6 @@ export default function DirectDataAccessProductEntitlement() {
   const [hospitalData, setHospitalData] = useState(initialDataAccess.hospitalData);
   const [payerData, setPayerData] = useState(initialDataAccess.payerData);
   const [visibleToUser, setVisibleToUser] = useState(initialDataAccess.visibleToUser);
-  const [showDataAccessDebug, setShowDataAccessDebug] = useState(false);
   
   // Track which sections just saved
   const [savedSection, setSavedSection] = useState<string | null>(null);
@@ -81,50 +80,8 @@ export default function DirectDataAccessProductEntitlement() {
       </div>
 
       {/* Data Access Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
-        {showDataAccessDebug && (
-          <>
-            <div className="pointer-events-none absolute left-0 right-0 top-0 h-6 bg-[#36c5ba1a] border-b border-dashed border-[#36c5ba] flex items-center justify-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#16696d]">
-              Top padding · 24px
-            </div>
-            <div className="pointer-events-none absolute left-0 right-0 bottom-0 h-6 bg-[#16696d0d] border-t border-dashed border-[#16696d] flex items-center justify-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#16696d]">
-              Bottom padding · 24px
-            </div>
-          </>
-        )}
-        <SectionHeader
-          title="Data Access"
-          showDirtyDot={isDataAccessDirty}
-          action={
-            <button
-              type="button"
-              onClick={() => setShowDataAccessDebug((prev) => !prev)}
-              className="px-3 py-1 border border-dashed border-[#16696d] text-[11px] uppercase tracking-[0.08em] text-[#16696d] rounded bg-white hover:bg-[#f0fffc]"
-            >
-              {showDataAccessDebug ? 'Hide debug' : 'Show debug'}
-            </button>
-          }
-        />
-        {showDataAccessDebug && (
-          <div className="w-full bg-[#f6fffd] border border-dashed border-[#36c5ba] rounded px-3 py-2 text-[11px] text-[#0d5256] flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-[#36c5ba]" />
-              <span>Top padding: 24px (`pt-[24px]`)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-[#36c5ba]" />
-              <span>Vertical spacing between rows: 24px (`gap-6`)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-[#36c5ba]" />
-              <span>Save row offset: 16px (`mt-4`)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-[#36c5ba]" />
-              <span>Bottom padding: 24px (`pb-[24px]`)</span>
-            </div>
-          </div>
-        )}
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-0 relative shrink-0 w-full">
+        <SectionHeader title="Data Access" showDirtyDot={isDataAccessDirty} />
         <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4 pt-0">
           {/* Hospital Data */}
           <div className="flex items-center justify-between relative shrink-0 w-full">
