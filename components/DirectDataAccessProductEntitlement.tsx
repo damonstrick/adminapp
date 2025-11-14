@@ -122,7 +122,7 @@ export default function DirectDataAccessProductEntitlement() {
         </div>
         
         {/* Save button */}
-        <div className="w-full flex justify-end mt-4">
+        <div className="w-full flex justify-end mt-6">
           {isDataAccessDirty && savedSection !== 'dataAccess' && savedSection !== 'all' && (
             <button
               onClick={handleSaveDataAccess}
