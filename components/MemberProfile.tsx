@@ -9,12 +9,13 @@ import ShinyText from './ShinyText';
 import PRODUCT_LOGOS from './productLogos';
 import PhiAwarenessBanner from './PhiAwarenessBanner';
 import { usePhiBanner } from './PhiBannerContext';
+import { ANALYZE_PRODUCT_NAME } from '@/constants/products';
 
 interface MemberProfileProps {
   memberId: string;
 }
 
-const ALL_PRODUCTS = ['Analyze', 'Clear Contracts'];
+const ALL_PRODUCTS = [ANALYZE_PRODUCT_NAME, 'Clear Contracts'];
 
 export default function MemberProfile({ memberId }: MemberProfileProps) {
   const { showPhiBanner } = usePhiBanner();
@@ -29,11 +30,11 @@ export default function MemberProfile({ memberId }: MemberProfileProps) {
     status: 'Active',
     organization: 'CommonSpirit Health',
     groups: [
-      { name: 'Company Admins', description: 'Full administrative access to the Turquoise platform', members: 28, products: ['Clear Contracts', 'Analyze'], id: 'company-admins' },
-      { name: 'Product Managers', description: 'Read-only access to the Emerald platform', members: 170, products: ['Clear Contracts', 'Analyze'], id: 'product-managers' },
+      { name: 'Company Admins', description: 'Full administrative access to the Turquoise platform', members: 28, products: ['Clear Contracts', ANALYZE_PRODUCT_NAME], id: 'company-admins' },
+      { name: 'Product Managers', description: 'Read-only access to the Emerald platform', members: 170, products: ['Clear Contracts', ANALYZE_PRODUCT_NAME], id: 'product-managers' },
       { name: 'UX Designers', description: 'Read-only access to the Emerald platform', members: 170, products: ['Clear Contracts'], id: 'ux-designers' },
-      { name: 'Software Engineers', description: 'Read-only access to the Emerald platform', members: 15, products: ['Clear Contracts', 'Analyze'], id: 'software-engineers' },
-      { name: 'Marketing Specialists', description: 'Data export functionality on the Diamond platform', members: 15, products: ['Clear Contracts', 'Analyze'], id: 'marketing-specialists' },
+      { name: 'Software Engineers', description: 'Read-only access to the Emerald platform', members: 15, products: ['Clear Contracts', ANALYZE_PRODUCT_NAME], id: 'software-engineers' },
+      { name: 'Marketing Specialists', description: 'Data export functionality on the Diamond platform', members: 15, products: ['Clear Contracts', ANALYZE_PRODUCT_NAME], id: 'marketing-specialists' },
     ],
   };
 
@@ -385,7 +386,7 @@ export default function MemberProfile({ memberId }: MemberProfileProps) {
               ) : (
                 <>
                   {products.map((product, index) => {
-                    const productHref = product === 'Analyze' 
+                    const productHref = product === ANALYZE_PRODUCT_NAME 
                       ? `/permissions/members/${memberId}/analyze`
                       : product === 'Clear Contracts'
                       ? `/permissions/members/${memberId}/clear-contracts`

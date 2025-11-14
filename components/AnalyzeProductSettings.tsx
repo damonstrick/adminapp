@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import ShinyText from './ShinyText';
 import PhiAwarenessBanner from './PhiAwarenessBanner';
 import { usePhiBanner } from './PhiBannerContext';
-import { usePermissionsPanel } from './PermissionsPanelContext';
+import { ANALYZE_PRODUCT_NAME } from '@/constants/products';
 
 interface AnalyzeProductSettingsProps {
   groupId: string;
@@ -27,9 +27,58 @@ interface Condition {
 
 const SCOPE_TYPES: ScopeType[] = ['State', 'Billing Code', 'CBSA', 'NPI'];
 
+type RoleOption = 'Viewer' | 'Editor' | 'Admin';
+
+const ROLE_OPTIONS: RoleOption[] = ['Viewer', 'Editor', 'Admin'];
+
+const ANALYZE_ROLE_PERMISSIONS: Record<RoleOption, string[]> = {
+  Viewer: [
+    'Can View Rate Analytics',
+    'Can See The Product Roadmap',
+    'Can View Payer Parsing Ingestion State',
+  ],
+  Editor: [
+    'Can View Payer Parsing Ingestion State',
+    'Can Add Rate Analytics',
+    'Can Change Rate Analytics',
+    'Can View Rate Analytics',
+    'Can See The Product Roadmap',
+  ],
+  Admin: [
+    'Can Manage Rate Analytics',
+    'Can Publish Rate Analytics',
+    'Can View Payer Parsing Ingestion State',
+    'Can See The Product Roadmap',
+  ],
+};
+
+const SEARCH_ROLE_PERMISSIONS: Record<RoleOption, string[]> = {
+  Viewer: [
+    'Can See Medicare Reference Pricing Rates',
+    'Can Use All Filters',
+    'Can Use Raw Charge Enterprise Tool',
+    'Can View Payer Parsing Ingestion Status',
+    'Can See The Care Search',
+  ],
+  Editor: [
+    'Can See Medicare Reference Pricing Rates',
+    'Can Use All Filters',
+    'Can Use Raw Charge Enterprise Tool',
+    'Can View Payer Parsing Ingestion Status',
+    'Can See The Care Search',
+    'Can Export Search Results',
+  ],
+  Admin: [
+    'Can Manage Search Permissions',
+    'Can Configure Filters',
+    'Can View Payer Parsing Ingestion Status',
+    'Can See Medicare Reference Pricing Rates',
+    'Can Use The Care Search',
+  ],
+};
+
 export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettingsProps) {
   const { showPhiBanner } = usePhiBanner();
-  const { isPanelOpen: showPermissionsPanel, setIsPanelOpen: setShowPermissionsPanel } = usePermissionsPanel();
   const searchParams = useSearchParams();
   const router = useRouter();
   const from = searchParams.get('from');
@@ -51,16 +100,17 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     : `/permissions/groups/${groupId}`;
 
   const handleRevokeAccess = () => {
+    const encodedName = encodeURIComponent(ANALYZE_PRODUCT_NAME);
     const revokedUrl = from === 'member' && memberId
-      ? `/permissions/members/${memberId}?revoked=Analyze`
-      : `/permissions/groups/${groupId}?revoked=Analyze`;
+      ? `/permissions/members/${memberId}?revoked=${encodedName}`
+      : `/permissions/groups/${groupId}?revoked=${encodedName}`;
     router.push(revokedUrl);
   };
 
   // Initial/clean state
   const [initialRolesPermissions, setInitialRolesPermissions] = useState({
-    selectedRole: 'Editor',
-    customPermissions: [] as string[],
+    analyzeRole: 'Editor' as RoleOption,
+    searchRole: 'Viewer' as RoleOption,
   });
   const [initialScope, setInitialScope] = useState<{
     conditions: Condition[];
@@ -77,20 +127,8 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   });
   
   // Current state
-  const [selectedRole, setSelectedRole] = useState(initialRolesPermissions.selectedRole);
-  const [customPermissions, setCustomPermissions] = useState<string[]>(initialRolesPermissions.customPermissions);
-  
-  // Custom permissions autocomplete state
-  const [permissionSearchValue, setPermissionSearchValue] = useState('');
-  const [showPermissionAutocomplete, setShowPermissionAutocomplete] = useState(false);
-  const [permissionAutocompletePosition, setPermissionAutocompletePosition] = useState({ top: 0, left: 0, width: 0 });
-  const permissionInputRef = useRef<HTMLInputElement>(null);
-  const permissionContainerRef = useRef<HTMLDivElement>(null);
-  const permissionAutocompleteRef = useRef<HTMLDivElement>(null);
-  
-  // Permissions panel state
-  const [permissionsPanelSearch, setPermissionsPanelSearch] = useState('');
-  const [selectedPermissionsInPanel, setSelectedPermissionsInPanel] = useState<string[]>([]);
+  const [analyzeRole, setAnalyzeRole] = useState<RoleOption>(initialRolesPermissions.analyzeRole);
+  const [searchRole, setSearchRole] = useState<RoleOption>(initialRolesPermissions.searchRole);
   const [msDrgSelected, setMsDrgSelected] = useState(initialPreferences.msDrgSelected);
   const [hcpcsSelected, setHcpcsSelected] = useState(initialPreferences.hcpcsSelected);
   const [rolesPermissionsOpen, setRolesPermissionsOpen] = useState(true);
@@ -104,161 +142,10 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   const [hospitalRatesConditions, setHospitalRatesConditions] = useState<Condition[]>(initialScope.hospitalRatesConditions);
   const [payerRatesConditions, setPayerRatesConditions] = useState<Condition[]>(initialScope.payerRatesConditions);
   
-  // Available permissions list
-  const ALL_PERMISSIONS = [
-    'Can Add Contracts',
-    'Can Edit Contracts',
-    'Can Delete Contracts',
-    'Can View Contracts',
-    'Can Upload Documents',
-    'Can Delete Documents',
-    'Can Edit Documents',
-    'Can View Documents',
-    'Can Manage Members',
-    'Can Manage Groups',
-    'Can Manage Settings',
-    'Can View Analytics',
-    'Can Export Data',
-    'Can Import Data',
-    'Can Manage Roles',
-    'Can Manage Permissions',
-    'Can Create Reports',
-    'Can Schedule Reports',
-    'Can Share Reports',
-    'Can View Reports',
-    'Can Edit Reports',
-    'Can Delete Reports',
-    'Can Manage Billing',
-    'Can View Billing',
-    'Can Edit Billing',
-    'Can Manage Providers',
-    'Can View Providers',
-    'Can Add Providers',
-    'Can Edit Providers',
-    'Can Delete Providers',
-    'Can Manage Payers',
-    'Can View Payers',
-    'Can Add Payers',
-    'Can Edit Payers',
-    'Can Delete Payers',
-    'Can Manage Networks',
-    'Can View Networks',
-    'Can Add Networks',
-    'Can Edit Networks',
-    'Can Delete Networks',
-    'Can Manage Plans',
-    'Can View Plans',
-    'Can Add Plans',
-    'Can Edit Plans',
-    'Can Delete Plans',
-    'Can Manage Services',
-    'Can View Services',
-    'Can Add Services',
-    'Can Edit Services',
-    'Can Delete Services',
-    'Can Manage Billing Codes',
-    'Can View Billing Codes',
-    'Can Add Billing Codes',
-    'Can Edit Billing Codes',
-    'Can Delete Billing Codes',
-    'Can Manage Entities',
-    'Can View Entities',
-    'Can Add Entities',
-    'Can Edit Entities',
-    'Can Delete Entities',
-    'Can Manage Users',
-    'Can View Users',
-    'Can Add Users',
-    'Can Edit Users',
-    'Can Delete Users',
-    'Can Manage Access',
-    'Can View Access',
-    'Can Grant Access',
-    'Can Revoke Access',
-    'Can Manage Workflows',
-    'Can View Workflows',
-    'Can Create Workflows',
-    'Can Edit Workflows',
-    'Can Delete Workflows',
-    'Can Manage Notifications',
-    'Can View Notifications',
-    'Can Send Notifications',
-    'Can Manage Templates',
-    'Can View Templates',
-    'Can Create Templates',
-    'Can Edit Templates',
-    'Can Delete Templates',
-    'Can Manage Integrations',
-    'Can View Integrations',
-    'Can Add Integrations',
-    'Can Edit Integrations',
-    'Can Delete Integrations',
-    'Can Manage API Keys',
-    'Can View API Keys',
-    'Can Create API Keys',
-    'Can Revoke API Keys',
-    'Can Manage Audit Logs',
-    'Can View Audit Logs',
-    'Can Export Audit Logs',
-    'Can Manage Compliance',
-    'Can View Compliance',
-    'Can Edit Compliance',
-    'Can Manage Security',
-    'Can View Security',
-    'Can Edit Security',
-    'Can Manage Backups',
-    'Can View Backups',
-    'Can Create Backups',
-    'Can Restore Backups',
-    'Can Manage Data Retention',
-    'Can View Data Retention',
-    'Can Edit Data Retention',
-  ];
-
-  // Get filtered permissions for autocomplete
-  const getFilteredPermissions = (): string[] => {
-    if (!permissionSearchValue.trim()) return ALL_PERMISSIONS;
-    const lowerSearch = permissionSearchValue.toLowerCase();
-    return ALL_PERMISSIONS.filter(permission =>
-      permission.toLowerCase().includes(lowerSearch) &&
-      !customPermissions.includes(permission)
-    );
-  };
-
-  // Update autocomplete position
-  useEffect(() => {
-    if (showPermissionAutocomplete && permissionContainerRef.current) {
-      const rect = permissionContainerRef.current.getBoundingClientRect();
-      setPermissionAutocompletePosition({
-        top: rect.bottom + 4,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
-  }, [showPermissionAutocomplete, permissionSearchValue, customPermissions]);
-
-  // Handle click outside to close autocomplete
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        permissionAutocompleteRef.current &&
-        !permissionAutocompleteRef.current.contains(event.target as Node) &&
-        permissionInputRef.current &&
-        !permissionInputRef.current.contains(event.target as Node)
-      ) {
-        setShowPermissionAutocomplete(false);
-      }
-    };
-
-    if (showPermissionAutocomplete) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showPermissionAutocomplete]);
-
   // Dirty state tracking
-  const isRolesPermissionsDirty = selectedRole !== initialRolesPermissions.selectedRole ||
-    JSON.stringify([...customPermissions].sort()) !== JSON.stringify([...initialRolesPermissions.customPermissions].sort());
+  const isRolesPermissionsDirty =
+    analyzeRole !== initialRolesPermissions.analyzeRole ||
+    searchRole !== initialRolesPermissions.searchRole;
   const isScopeDirty = JSON.stringify({
     conditions: conditions.sort((a, b) => a.id.localeCompare(b.id)),
     hospitalRatesConditions: hospitalRatesConditions.sort((a, b) => a.id.localeCompare(b.id)),
@@ -269,11 +156,11 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   const dirtySectionsCount = [isRolesPermissionsDirty, isScopeDirty, isPreferencesDirty].filter(Boolean).length;
   
   const handleSaveRolesPermissions = () => {
-    setInitialRolesPermissions({ 
-      selectedRole,
-      customPermissions: [...customPermissions],
+    setInitialRolesPermissions({
+      analyzeRole,
+      searchRole,
     });
-    console.log('Saving roles & permissions:', { selectedRole, customPermissions });
+    console.log('Saving roles & permissions:', { analyzeRole, searchRole });
     setSavedSection('rolesPermissions');
     setFadingOut(null);
     setTimeout(() => {
@@ -282,40 +169,6 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     }, 1700);
   };
 
-  const handleAddPermission = (permission: string) => {
-    if (!customPermissions.includes(permission)) {
-      setCustomPermissions([...customPermissions, permission]);
-      setPermissionSearchValue('');
-      setShowPermissionAutocomplete(false);
-    }
-  };
-
-  const handleRemovePermission = (permission: string) => {
-    setCustomPermissions(customPermissions.filter(p => p !== permission));
-  };
-
-  const handlePermissionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPermissionSearchValue(value);
-    if (value.trim()) {
-      setShowPermissionAutocomplete(true);
-    } else {
-      setShowPermissionAutocomplete(false);
-    }
-  };
-
-  const handlePermissionInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      setShowPermissionAutocomplete(false);
-      permissionInputRef.current?.blur();
-    } else if (e.key === 'Enter' && permissionSearchValue.trim()) {
-      const filtered = getFilteredPermissions();
-      if (filtered.length > 0) {
-        handleAddPermission(filtered[0]);
-      }
-    }
-  };
-  
   const handleSaveScope = () => {
     setInitialScope({
       conditions: [...conditions],
@@ -364,6 +217,45 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
       }, 300);
     }, 1700);
   };
+
+  const renderRoleSection = (
+    label: string,
+    role: RoleOption,
+    onSelect: (role: RoleOption) => void,
+    permissionMap: Record<RoleOption, string[]>,
+    withDivider = false
+  ) => (
+    <div className={`w-full flex flex-col gap-4 ${withDivider ? 'border-b border-dashed border-[#e3e7ea] pb-6' : ''}`}>
+      <div className="flex items-center justify-between relative shrink-0 w-full">
+        <p className="font-medium text-xs text-[#121313]">{label}</p>
+        <div className="flex gap-2 items-center">
+          {ROLE_OPTIONS.map((option) => (
+            <button
+              key={option}
+              onClick={() => onSelect(option)}
+              className={`w-[96px] h-8 px-3 py-2 rounded text-xs font-medium transition-colors ${
+                role === option ? 'bg-[#16696d] text-white' : 'bg-white border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex flex-col gap-2 items-start">
+        <p className="text-xs text-[#6e8081]">
+          As a <span className="underline">{role}</span>, this member can:
+        </p>
+        <div className="flex flex-wrap gap-2 items-start w-full">
+          {permissionMap[role].map((permission) => (
+            <div key={`${label}-${role}-${permission}`} className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
+              {permission}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   // Popover states
   const [addScopePopover, setAddScopePopover] = useState<{ conditionId: string | null; section: 'clear' | 'hospital' | 'payer'; open: boolean } | null>(null);
@@ -1065,51 +957,6 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     );
   };
 
-  // Filter permissions for panel
-  const filteredPermissionsForPanel = ALL_PERMISSIONS.filter(permission => {
-    if (!permissionsPanelSearch.trim()) return true;
-    return permission.toLowerCase().includes(permissionsPanelSearch.toLowerCase());
-  });
-
-  // Handle select all
-  const handleSelectAllPermissions = () => {
-    setSelectedPermissionsInPanel([...filteredPermissionsForPanel]);
-  };
-
-  // Handle clear all
-  const handleClearAllPermissions = () => {
-    setSelectedPermissionsInPanel([]);
-  };
-
-  // Handle toggle permission in panel
-  const handleTogglePermissionInPanel = (permission: string) => {
-    if (selectedPermissionsInPanel.includes(permission)) {
-      setSelectedPermissionsInPanel(selectedPermissionsInPanel.filter(p => p !== permission));
-    } else {
-      setSelectedPermissionsInPanel([...selectedPermissionsInPanel, permission]);
-    }
-  };
-
-  // Apply selected permissions from panel to custom permissions
-  const handleApplyPermissionsFromPanel = () => {
-    setCustomPermissions(selectedPermissionsInPanel);
-    setShowPermissionsPanel(false);
-    setPermissionsPanelSearch('');
-  };
-
-  // Sync panel selection with custom permissions when opening
-  useEffect(() => {
-    if (showPermissionsPanel) {
-      setSelectedPermissionsInPanel([...customPermissions]);
-    }
-  }, [showPermissionsPanel, customPermissions]);
-
-  // Cleanup: close panel when component unmounts
-  useEffect(() => {
-    return () => {
-      setShowPermissionsPanel(false);
-    };
-  }, [setShowPermissionsPanel]);
 
   return (
     <>
@@ -1123,7 +970,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
               {breadcrumbLabel}
             </Link>
             <span>/</span>
-            <span className="text-[#121313]">Analyze</span>
+            <span className="text-[#121313]">{ANALYZE_PRODUCT_NAME}</span>
           </div>
 
           {/* Header with back button and title */}
@@ -1136,7 +983,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
               </Link>
               <div className="flex flex-col gap-1 items-start not-italic relative shrink-0">
                 <p className="font-semibold leading-6 relative shrink-0 text-[#121313] text-base tracking-[0.16px]">
-                  Analyze
+                  {ANALYZE_PRODUCT_NAME}
                 </p>
               </div>
             </div>
@@ -1158,15 +1005,12 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
       )}
       
       {/* Roles & Permissions Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setRolesPermissionsOpen(!rolesPermissionsOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
             <p className="font-semibold text-sm text-[#121313]">Roles & Permissions</p>
             {isRolesPermissionsDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
@@ -1206,176 +1050,19 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
         </div>
         {rolesPermissionsOpen && (
           <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-
-          {/* Role Toggle Buttons Container */}
-          <div className="bg-white relative shrink-0 w-full">
-            <div className="flex flex-col items-start relative w-full">
-              <div className="bg-white box-border flex flex-col gap-4 items-start pb-4 pt-0 px-0 relative shrink-0 w-full">
-                <div className="flex gap-2 h-8 items-start relative shrink-0 w-full">
-                  {['Viewer', 'Editor', 'Admin', 'Custom'].map((role) => (
-                    <button
-                      key={role}
-                      onClick={() => setSelectedRole(role)}
-                      className={`flex-1 flex items-center justify-center h-8 px-3 py-2 rounded text-xs font-medium transition-colors ${
-                        selectedRole === role
-                          ? 'bg-[#16696d] text-white'
-                          : 'bg-white border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
-                      }`}
-                    >
-                      {role}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Permissions Description */}
-          <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-            {selectedRole !== 'Custom' && (
-              <p className="font-medium leading-6 relative shrink-0 text-xs text-[rgba(0,0,0,0.5)] tracking-[-0.132px]">
-                <span>As an </span>
-                <span className="underline">{selectedRole}</span>
-                <span>, this member can:</span>
-              </p>
-            )}
-            {selectedRole !== 'Custom' && (
-              <div className="flex flex-wrap gap-2 items-start px-0.5 py-0 relative shrink-0 w-full">
-                {selectedRole === 'Editor' && (
-                  <>
-                    <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                      Can Add Contracts
-                    </div>
-                    <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                      Can Delete Contracts
-                    </div>
-                    <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                      Can Edit Contracts
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-            
-            {/* Custom Permissions Section */}
-            {selectedRole === 'Custom' && (
-              <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-                <div className="flex gap-2 items-center justify-between relative shrink-0 w-full">
-                  <p className="font-medium leading-6 relative shrink-0 text-xs text-[rgba(0,0,0,0.5)] tracking-[-0.132px]">
-                    Define Custom Permissions
-                  </p>
-                  <button 
-                    onClick={() => setShowPermissionsPanel(true)}
-                    className="bg-white border border-[#e3e7ea] border-solid flex gap-1 h-5 items-center justify-center px-1 py-0.5 rounded hover:bg-[#f0f2f2]"
-                  >
-                    <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px] whitespace-pre">
-                      View All Permissions
-                    </p>
-                  </button>
-                </div>
-                
-                {/* Permissions Input Area */}
-                <div className="bg-white border border-[#e3e7ea] border-solid flex flex-wrap gap-2 items-center px-3 py-2 rounded relative shrink-0 w-full" ref={permissionContainerRef}>
-                  {/* Permission Tags */}
-                  {customPermissions.map((permission) => (
-                    <div key={permission} className="bg-[#e8ebeb] flex gap-1 h-5 items-center justify-center px-2 py-0.5 rounded">
-                      <p className="font-medium leading-4 relative shrink-0 text-[11px] text-[#121313] tracking-[0.11px] whitespace-pre">
-                        {permission}
-                      </p>
-                      <button
-                        onClick={() => handleRemovePermission(permission)}
-                        className="w-3 h-3 flex items-center justify-center hover:bg-[#d2d8dc] rounded"
-                      >
-                        <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                  
-                  {/* Search Input */}
-                  <input
-                    ref={permissionInputRef}
-                    type="text"
-                    value={permissionSearchValue}
-                    onChange={handlePermissionInputChange}
-                    onKeyDown={handlePermissionInputKeyDown}
-                    onFocus={() => {
-                      if (permissionSearchValue.trim()) {
-                        setShowPermissionAutocomplete(true);
-                      }
-                    }}
-                    placeholder={customPermissions.length === 0 ? "Search permissions..." : ""}
-                    className="flex-1 min-w-[120px] bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
-                  />
-                  
-                  {/* Autocomplete Dropdown */}
-                  {showPermissionAutocomplete && getFilteredPermissions().length > 0 && (
-                    <div
-                      ref={permissionAutocompleteRef}
-                      className="fixed bg-white border border-[#e3e7ea] rounded-lg shadow-[0px_4px_16px_0px_rgba(0,0,0,0.16)] p-2 z-50 min-w-[224px]"
-                      style={{
-                        top: `${permissionAutocompletePosition.top}px`,
-                        left: `${permissionAutocompletePosition.left}px`,
-                        width: `${permissionAutocompletePosition.width}px`,
-                      }}
-                    >
-                      {/* Search Box */}
-                      <div className="border-b border-[#e3e7ea] border-solid pb-3 mb-0">
-                        <div className="bg-[#f7f8f8] border border-[#e3e7ea] border-solid rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
-                          <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                          <input
-                            type="text"
-                            value={permissionSearchValue}
-                            onChange={handlePermissionInputChange}
-                            onKeyDown={handlePermissionInputKeyDown}
-                            placeholder="Search"
-                            className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
-                            autoFocus
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Options List */}
-                      <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
-                        {getFilteredPermissions().map((permission) => (
-                          <button
-                            key={permission}
-                            onClick={() => handleAddPermission(permission)}
-                            className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
-                          >
-                            <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                              {permission}
-                            </p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+            {renderRoleSection('Analyze', analyzeRole, setAnalyzeRole, ANALYZE_ROLE_PERMISSIONS, true)}
+            {renderRoleSection('Search', searchRole, setSearchRole, SEARCH_ROLE_PERMISSIONS)}
           </div>
         )}
       </div>
 
       {/* Scope Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setScopeOpen(!scopeOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
             <p className="font-semibold text-sm text-[#121313]">Scope</p>
             {isScopeDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
@@ -1440,15 +1127,12 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
       </div>
 
       {/* Preferences Section */}
-      <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setPreferencesOpen(!preferencesOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-            </svg>
             <p className="font-semibold text-sm text-[#121313]">Preferences</p>
             {isPreferencesDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
@@ -1598,102 +1282,6 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
       )}
       </div>
       
-      {/* Permissions Panel */}
-      {showPermissionsPanel && (
-        <div className="fixed bg-white border-l border-[#e3e7ea] border-solid flex flex-col items-start px-0 py-0 right-0 bottom-0 w-[400px] z-30" style={{ top: '96px' }}>
-          {/* Header */}
-          <div className="flex flex-col gap-2 items-start px-4 py-4 relative shrink-0 w-full">
-            <div className="flex items-center justify-between relative shrink-0 w-full">
-              <p className="font-semibold leading-5 relative shrink-0 text-sm text-[#121313] tracking-[0.14px]">
-                Permissions
-              </p>
-              <button
-                onClick={() => {
-                  setShowPermissionsPanel(false);
-                  setPermissionsPanelSearch('');
-                }}
-                className="w-8 h-8 flex items-center justify-center hover:bg-[#f0f2f2] rounded"
-              >
-                <svg className="w-5 h-5 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          
-          {/* Search Input */}
-          <div className="px-4 py-0 relative shrink-0 w-full mt-3">
-            <div className="bg-[#f7f8f8] border border-[#e3e7ea] border-solid rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
-              <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                value={permissionsPanelSearch}
-                onChange={(e) => setPermissionsPanelSearch(e.target.value)}
-                placeholder="Search"
-                className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
-              />
-            </div>
-          </div>
-          
-          {/* Filters - Select All / Clear All */}
-          <div className="border-t border-[#e3e7ea] border-solid flex items-center justify-between pb-3 pt-4 px-4 relative shrink-0 w-full mt-2">
-            <button
-              onClick={handleSelectAllPermissions}
-              className="flex gap-1 h-6 items-center justify-center px-1 py-1 rounded hover:bg-[#f0f2f2]"
-            >
-              <p className="font-medium leading-4 relative shrink-0 text-xs text-[#4b595c] tracking-[0.12px] whitespace-pre">
-                Select All
-              </p>
-            </button>
-            <button
-              onClick={handleClearAllPermissions}
-              className="flex gap-1 h-6 items-center justify-center px-1 py-1 rounded hover:bg-[#f0f2f2]"
-            >
-              <p className="font-medium leading-4 relative shrink-0 text-xs text-[#4b595c] tracking-[0.12px] whitespace-pre">
-                Clear All
-              </p>
-            </button>
-          </div>
-          
-          {/* Permissions List */}
-          <div className="flex flex-col gap-3 items-start px-4 py-4 overflow-y-auto relative w-full flex-1" style={{ minHeight: 0, maxHeight: 'calc(100vh - 280px)' }}>
-            {filteredPermissionsForPanel.map((permission) => {
-              const isSelected = selectedPermissionsInPanel.includes(permission);
-              return (
-                <div key={permission} className="flex gap-4 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => handleTogglePermissionInPanel(permission)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center shrink-0 cursor-pointer ${
-                      isSelected ? 'border-[#16696d] bg-[#16696d]' : 'border-[#d2d8dc] bg-white'
-                    }`}
-                  >
-                    {isSelected && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px] flex-1">
-                    {permission}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-          
-          {/* Apply Button */}
-          <div className="border-t border-[#e3e7ea] border-solid flex items-center justify-end pb-4 pt-4 px-4 relative shrink-0 w-full">
-            <button
-              onClick={handleApplyPermissionsFromPanel}
-              className="px-4 py-2 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256]"
-            >
-              Apply
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

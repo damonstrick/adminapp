@@ -6,7 +6,6 @@ import { useState, useRef, useEffect } from 'react';
 import ShinyText from './ShinyText';
 import PhiAwarenessBanner from './PhiAwarenessBanner';
 import { usePhiBanner } from './PhiBannerContext';
-import { usePermissionsPanel } from './PermissionsPanelContext';
 
 interface ClearContractsProductSettingsProps {
   groupId: string;
@@ -27,9 +26,36 @@ interface Condition {
 
 const SCOPE_TYPES: ScopeType[] = ['Providers', 'Payers', 'Payer Networks', 'States', 'Contract Types', 'Plans', 'Labels', 'Document Type', 'Services', 'Billing Codes'];
 
+type RoleOption = 'Viewer' | 'Editor' | 'Admin';
+
+const ROLE_OPTIONS: RoleOption[] = ['Viewer', 'Editor', 'Admin'];
+
+const CLEAR_CONTRACTS_ROLE_TAGS: Record<RoleOption, string[]> = {
+  Viewer: [
+    'Can View Contract Project',
+    'Can View Unapproved Intake Statuses',
+    'Can View Intake Attachments',
+  ],
+  Editor: [
+    'Can Add Contracts Project',
+    'Can Change Contract Project',
+    'Can View Contract Project',
+    'Can View Unapproved Intake Statuses',
+    'Can Add Hierarchical Document',
+  ],
+  Admin: [
+    'Can Add Contracts Project',
+    'Can Change Contract Project',
+    'Can Delete Contract Project',
+    'Can View Contract Project',
+    'Can View Unapproved Intake Statuses',
+    'Can Add Hierarchical Document',
+    'Can Approve Contract Project',
+  ],
+};
+
 export default function ClearContractsProductSettings({ groupId }: ClearContractsProductSettingsProps) {
   const { showPhiBanner } = usePhiBanner();
-  const { isPanelOpen: showPermissionsPanel, setIsPanelOpen: setShowPermissionsPanel } = usePermissionsPanel();
   const searchParams = useSearchParams();
   const router = useRouter();
   const from = searchParams.get('from');
@@ -58,9 +84,8 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
   };
 
   // Initial/clean state
-  const [initialRolesPermissions, setInitialRolesPermissions] = useState({
+  const [initialRolesPermissions, setInitialRolesPermissions] = useState<{ selectedRole: RoleOption }>({
     selectedRole: 'Editor',
-    customPermissions: [] as string[],
   });
   const [initialScope, setInitialScope] = useState<Condition[]>([
     {
@@ -83,20 +108,7 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
   });
   
   // Current state
-  const [selectedRole, setSelectedRole] = useState(initialRolesPermissions.selectedRole);
-  const [customPermissions, setCustomPermissions] = useState<string[]>(initialRolesPermissions.customPermissions);
-  
-  // Custom permissions autocomplete state
-  const [permissionSearchValue, setPermissionSearchValue] = useState('');
-  const [showPermissionAutocomplete, setShowPermissionAutocomplete] = useState(false);
-  const [permissionAutocompletePosition, setPermissionAutocompletePosition] = useState({ top: 0, left: 0, width: 0 });
-  const permissionInputRef = useRef<HTMLInputElement>(null);
-  const permissionContainerRef = useRef<HTMLDivElement>(null);
-  const permissionAutocompleteRef = useRef<HTMLDivElement>(null);
-  
-  // Permissions panel state
-  const [permissionsPanelSearch, setPermissionsPanelSearch] = useState('');
-  const [selectedPermissionsInPanel, setSelectedPermissionsInPanel] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<RoleOption>(initialRolesPermissions.selectedRole);
   
   const [rolesPermissionsOpen, setRolesPermissionsOpen] = useState(true);
   const [scopeOpen, setScopeOpen] = useState(true);
@@ -116,160 +128,7 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
   const [conditions, setConditions] = useState<Condition[]>(initialScope);
   
   // Available permissions list
-  const ALL_PERMISSIONS = [
-    'Can Add Contracts',
-    'Can Edit Contracts',
-    'Can Delete Contracts',
-    'Can View Contracts',
-    'Can Upload Documents',
-    'Can Delete Documents',
-    'Can Edit Documents',
-    'Can View Documents',
-    'Can Manage Members',
-    'Can Manage Groups',
-    'Can Manage Settings',
-    'Can View Analytics',
-    'Can Export Data',
-    'Can Import Data',
-    'Can Manage Roles',
-    'Can Manage Permissions',
-    'Can Create Reports',
-    'Can Schedule Reports',
-    'Can Share Reports',
-    'Can View Reports',
-    'Can Edit Reports',
-    'Can Delete Reports',
-    'Can Manage Billing',
-    'Can View Billing',
-    'Can Edit Billing',
-    'Can Manage Providers',
-    'Can View Providers',
-    'Can Add Providers',
-    'Can Edit Providers',
-    'Can Delete Providers',
-    'Can Manage Payers',
-    'Can View Payers',
-    'Can Add Payers',
-    'Can Edit Payers',
-    'Can Delete Payers',
-    'Can Manage Networks',
-    'Can View Networks',
-    'Can Add Networks',
-    'Can Edit Networks',
-    'Can Delete Networks',
-    'Can Manage Plans',
-    'Can View Plans',
-    'Can Add Plans',
-    'Can Edit Plans',
-    'Can Delete Plans',
-    'Can Manage Services',
-    'Can View Services',
-    'Can Add Services',
-    'Can Edit Services',
-    'Can Delete Services',
-    'Can Manage Billing Codes',
-    'Can View Billing Codes',
-    'Can Add Billing Codes',
-    'Can Edit Billing Codes',
-    'Can Delete Billing Codes',
-    'Can Manage Entities',
-    'Can View Entities',
-    'Can Add Entities',
-    'Can Edit Entities',
-    'Can Delete Entities',
-    'Can Manage Users',
-    'Can View Users',
-    'Can Add Users',
-    'Can Edit Users',
-    'Can Delete Users',
-    'Can Manage Access',
-    'Can View Access',
-    'Can Grant Access',
-    'Can Revoke Access',
-    'Can Manage Workflows',
-    'Can View Workflows',
-    'Can Create Workflows',
-    'Can Edit Workflows',
-    'Can Delete Workflows',
-    'Can Manage Notifications',
-    'Can View Notifications',
-    'Can Send Notifications',
-    'Can Manage Templates',
-    'Can View Templates',
-    'Can Create Templates',
-    'Can Edit Templates',
-    'Can Delete Templates',
-    'Can Manage Integrations',
-    'Can View Integrations',
-    'Can Add Integrations',
-    'Can Edit Integrations',
-    'Can Delete Integrations',
-    'Can Manage API Keys',
-    'Can View API Keys',
-    'Can Create API Keys',
-    'Can Revoke API Keys',
-    'Can Manage Audit Logs',
-    'Can View Audit Logs',
-    'Can Export Audit Logs',
-    'Can Manage Compliance',
-    'Can View Compliance',
-    'Can Edit Compliance',
-    'Can Manage Security',
-    'Can View Security',
-    'Can Edit Security',
-    'Can Manage Backups',
-    'Can View Backups',
-    'Can Create Backups',
-    'Can Restore Backups',
-    'Can Manage Data Retention',
-    'Can View Data Retention',
-    'Can Edit Data Retention',
-  ];
-
-  // Get filtered permissions for autocomplete
-  const getFilteredPermissions = (): string[] => {
-    if (!permissionSearchValue.trim()) return ALL_PERMISSIONS;
-    const lowerSearch = permissionSearchValue.toLowerCase();
-    return ALL_PERMISSIONS.filter(permission =>
-      permission.toLowerCase().includes(lowerSearch) &&
-      !customPermissions.includes(permission)
-    );
-  };
-
-  // Update autocomplete position
-  useEffect(() => {
-    if (showPermissionAutocomplete && permissionContainerRef.current) {
-      const rect = permissionContainerRef.current.getBoundingClientRect();
-      setPermissionAutocompletePosition({
-        top: rect.bottom + 4,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
-  }, [showPermissionAutocomplete, permissionSearchValue, customPermissions]);
-
-  // Handle click outside to close autocomplete
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        permissionAutocompleteRef.current &&
-        !permissionAutocompleteRef.current.contains(event.target as Node) &&
-        permissionInputRef.current &&
-        !permissionInputRef.current.contains(event.target as Node)
-      ) {
-        setShowPermissionAutocomplete(false);
-      }
-    };
-
-    if (showPermissionAutocomplete) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showPermissionAutocomplete]);
-  
-  // Dirty state tracking
-  const isRolesPermissionsDirty = selectedRole !== initialRolesPermissions.selectedRole ||
-    JSON.stringify([...customPermissions].sort()) !== JSON.stringify([...initialRolesPermissions.customPermissions].sort());
+  const isRolesPermissionsDirty = selectedRole !== initialRolesPermissions.selectedRole;
   const isScopeDirty = JSON.stringify(conditions.sort((a, b) => a.id.localeCompare(b.id))) !== 
     JSON.stringify(initialScope.sort((a, b) => a.id.localeCompare(b.id)));
   const isPreferencesDirty = JSON.stringify({
@@ -285,51 +144,16 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
   const dirtySectionsCount = [isRolesPermissionsDirty, isScopeDirty, isPreferencesDirty].filter(Boolean).length;
   
   const handleSaveRolesPermissions = () => {
-    setInitialRolesPermissions({ 
+    setInitialRolesPermissions({
       selectedRole,
-      customPermissions: [...customPermissions],
     });
-    console.log('Saving roles & permissions:', { selectedRole, customPermissions });
+    console.log('Saving roles & permissions:', { selectedRole });
     setSavedSection('rolesPermissions');
     setFadingOut(null);
     setTimeout(() => {
       setFadingOut('rolesPermissions');
       setTimeout(() => setSavedSection(null), 300);
     }, 1700);
-  };
-
-  const handleAddPermission = (permission: string) => {
-    if (!customPermissions.includes(permission)) {
-      setCustomPermissions([...customPermissions, permission]);
-      setPermissionSearchValue('');
-      setShowPermissionAutocomplete(false);
-    }
-  };
-
-  const handleRemovePermission = (permission: string) => {
-    setCustomPermissions(customPermissions.filter(p => p !== permission));
-  };
-
-  const handlePermissionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPermissionSearchValue(value);
-    if (value.trim()) {
-      setShowPermissionAutocomplete(true);
-    } else {
-      setShowPermissionAutocomplete(false);
-    }
-  };
-
-  const handlePermissionInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      setShowPermissionAutocomplete(false);
-      permissionInputRef.current?.blur();
-    } else if (e.key === 'Enter' && permissionSearchValue.trim()) {
-      const filtered = getFilteredPermissions();
-      if (filtered.length > 0) {
-        handleAddPermission(filtered[0]);
-      }
-    }
   };
   
   const handleSaveScope = () => {
@@ -646,51 +470,6 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
     }));
   };
 
-  // Filter permissions for panel
-  const filteredPermissionsForPanel = ALL_PERMISSIONS.filter(permission => {
-    if (!permissionsPanelSearch.trim()) return true;
-    return permission.toLowerCase().includes(permissionsPanelSearch.toLowerCase());
-  });
-
-  // Handle select all
-  const handleSelectAllPermissions = () => {
-    setSelectedPermissionsInPanel([...filteredPermissionsForPanel]);
-  };
-
-  // Handle clear all
-  const handleClearAllPermissions = () => {
-    setSelectedPermissionsInPanel([]);
-  };
-
-  // Handle toggle permission in panel
-  const handleTogglePermissionInPanel = (permission: string) => {
-    if (selectedPermissionsInPanel.includes(permission)) {
-      setSelectedPermissionsInPanel(selectedPermissionsInPanel.filter(p => p !== permission));
-    } else {
-      setSelectedPermissionsInPanel([...selectedPermissionsInPanel, permission]);
-    }
-  };
-
-  // Apply selected permissions from panel to custom permissions
-  const handleApplyPermissionsFromPanel = () => {
-    setCustomPermissions(selectedPermissionsInPanel);
-    setShowPermissionsPanel(false);
-    setPermissionsPanelSearch('');
-  };
-
-  // Sync panel selection with custom permissions when opening
-  useEffect(() => {
-    if (showPermissionsPanel) {
-      setSelectedPermissionsInPanel([...customPermissions]);
-    }
-  }, [showPermissionsPanel, customPermissions]);
-
-  // Cleanup: close panel when component unmounts
-  useEffect(() => {
-    return () => {
-      setShowPermissionsPanel(false);
-    };
-  }, [setShowPermissionsPanel]);
 
   return (
     <>
@@ -787,162 +566,36 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
         </div>
         {rolesPermissionsOpen && (
           <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-
-          {/* Role Toggle Buttons Container */}
-          <div className="bg-white relative shrink-0 w-full">
-            <div className="flex flex-col items-start relative w-full">
-              <div className="bg-white box-border flex flex-col gap-4 items-start pb-4 pt-0 px-0 relative shrink-0 w-full">
-                <div className="flex gap-2 h-8 items-start relative shrink-0 w-full">
-                  {['Viewer', 'Editor', 'Admin', 'Custom'].map((role) => (
-                    <button
-                      key={role}
-                      onClick={() => setSelectedRole(role)}
-                      className={`flex-1 flex items-center justify-center h-8 px-3 py-2 rounded text-xs font-medium transition-colors ${
-                        selectedRole === role
-                          ? 'bg-[#16696d] text-white'
-                          : 'bg-white border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
-                      }`}
-                    >
-                      {role}
-                    </button>
-                  ))}
-                </div>
+            <div className="bg-white box-border flex flex-col gap-4 items-start pb-4 w-full">
+              <div className="flex gap-2 h-8 items-start w-full">
+                {ROLE_OPTIONS.map((role) => (
+                  <button
+                    key={role}
+                    onClick={() => setSelectedRole(role)}
+                    className={`flex-1 flex items-center justify-center h-8 px-3 py-2 rounded text-xs font-medium transition-colors ${
+                      selectedRole === role
+                        ? 'bg-[#16696d] text-white'
+                        : 'bg-white border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
+                    }`}
+                  >
+                    {role}
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
 
-          {/* Permissions Description */}
-          <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-            {selectedRole !== 'Custom' && (
-              <p className="font-medium leading-6 relative shrink-0 text-xs text-[rgba(0,0,0,0.5)] tracking-[-0.132px]">
-                <span>As an </span>
-                <span className="underline">{selectedRole}</span>
-                <span>, this member can:</span>
+            <div className="flex flex-col gap-3 items-start w-full">
+              <p className="text-xs text-[#6e8081]">
+                As an <span className="underline">{selectedRole}</span>, this member can:
               </p>
-            )}
-            {selectedRole !== 'Custom' && (
-              <div className="flex flex-wrap gap-2 items-start px-0.5 py-0 relative shrink-0 w-full">
-                {selectedRole === 'Editor' && (
-                  <>
-                    <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                      Can Add Contracts
-                    </div>
-                    <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                      Can Delete Contracts
-                    </div>
-                    <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-                      Can Edit Contracts
-                    </div>
-                  </>
-                )}
+              <div className="flex flex-wrap gap-2 items-start w-full">
+                {CLEAR_CONTRACTS_ROLE_TAGS[selectedRole].map((tag) => (
+                  <div key={`${selectedRole}-${tag}`} className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
+                    {tag}
+                  </div>
+                ))}
               </div>
-            )}
-            
-            {/* Custom Permissions Section */}
-            {selectedRole === 'Custom' && (
-              <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-                <div className="flex gap-2 items-center justify-between relative shrink-0 w-full">
-                  <p className="font-medium leading-6 relative shrink-0 text-xs text-[rgba(0,0,0,0.5)] tracking-[-0.132px]">
-                    Define Custom Permissions
-                  </p>
-                  <button 
-                    onClick={() => setShowPermissionsPanel(true)}
-                    className="bg-white border border-[#e3e7ea] border-solid flex gap-1 h-5 items-center justify-center px-1 py-0.5 rounded hover:bg-[#f0f2f2]"
-                  >
-                    <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px] whitespace-pre">
-                      View All Permissions
-                    </p>
-                  </button>
-                </div>
-                
-                {/* Permissions Input Area */}
-                <div className="bg-white border border-[#e3e7ea] border-solid flex flex-wrap gap-2 items-center px-3 py-2 rounded relative shrink-0 w-full" ref={permissionContainerRef}>
-                  {/* Permission Tags */}
-                  {customPermissions.map((permission) => (
-                    <div key={permission} className="bg-[#e8ebeb] flex gap-1 h-5 items-center justify-center px-2 py-0.5 rounded">
-                      <p className="font-medium leading-4 relative shrink-0 text-[11px] text-[#121313] tracking-[0.11px] whitespace-pre">
-                        {permission}
-                      </p>
-                      <button
-                        onClick={() => handleRemovePermission(permission)}
-                        className="w-3 h-3 flex items-center justify-center hover:bg-[#d2d8dc] rounded"
-                      >
-                        <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                  
-                  {/* Search Input */}
-                  <input
-                    ref={permissionInputRef}
-                    type="text"
-                    value={permissionSearchValue}
-                    onChange={handlePermissionInputChange}
-                    onKeyDown={handlePermissionInputKeyDown}
-                    onFocus={() => {
-                      if (permissionSearchValue.trim()) {
-                        setShowPermissionAutocomplete(true);
-                      }
-                    }}
-                    placeholder={customPermissions.length === 0 ? "Search permissions..." : ""}
-                    className="flex-1 min-w-[120px] bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
-                  />
-                  
-                  {/* Autocomplete Dropdown */}
-                  {showPermissionAutocomplete && getFilteredPermissions().length > 0 && (
-                    <div
-                      ref={permissionAutocompleteRef}
-                      className="fixed bg-white border border-[#e3e7ea] rounded-lg shadow-[0px_4px_16px_0px_rgba(0,0,0,0.16)] p-2 z-50 min-w-[224px]"
-                      style={{
-                        top: `${permissionAutocompletePosition.top}px`,
-                        left: `${permissionAutocompletePosition.left}px`,
-                        width: `${permissionAutocompletePosition.width}px`,
-                      }}
-                    >
-                      {/* Search Box */}
-                      <div className="border-b border-[#e3e7ea] border-solid pb-3 mb-0">
-                        <div className="bg-[#f7f8f8] border border-[#e3e7ea] border-solid rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
-                          <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                          <input
-                            type="text"
-                            value={permissionSearchValue}
-                            onChange={handlePermissionInputChange}
-                            onKeyDown={handlePermissionInputKeyDown}
-                            placeholder="Search"
-                            className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
-                            autoFocus
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Options List */}
-                      <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
-                        {getFilteredPermissions().map((permission) => (
-                          <button
-                            key={permission}
-                            onClick={() => handleAddPermission(permission)}
-                            className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
-                          >
-                            <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                              {permission}
-                            </p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
           </div>
         )}
       </div>
@@ -1550,102 +1203,6 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
       )}
       </div>
       
-      {/* Permissions Panel */}
-      {showPermissionsPanel && (
-        <div className="fixed bg-white border-l border-[#e3e7ea] border-solid flex flex-col items-start px-0 py-0 right-0 bottom-0 w-[400px] z-30" style={{ top: '96px' }}>
-          {/* Header */}
-          <div className="flex flex-col gap-2 items-start px-4 py-4 relative shrink-0 w-full">
-            <div className="flex items-center justify-between relative shrink-0 w-full">
-              <p className="font-semibold leading-5 relative shrink-0 text-sm text-[#121313] tracking-[0.14px]">
-                Permissions
-              </p>
-              <button
-                onClick={() => {
-                  setShowPermissionsPanel(false);
-                  setPermissionsPanelSearch('');
-                }}
-                className="w-8 h-8 flex items-center justify-center hover:bg-[#f0f2f2] rounded"
-              >
-                <svg className="w-5 h-5 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          
-          {/* Search Input */}
-          <div className="px-4 py-0 relative shrink-0 w-full mt-3">
-            <div className="bg-[#f7f8f8] border border-[#e3e7ea] border-solid rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
-              <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                value={permissionsPanelSearch}
-                onChange={(e) => setPermissionsPanelSearch(e.target.value)}
-                placeholder="Search"
-                className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
-              />
-            </div>
-          </div>
-          
-          {/* Filters - Select All / Clear All */}
-          <div className="border-t border-[#e3e7ea] border-solid flex items-center justify-between pb-3 pt-4 px-4 relative shrink-0 w-full mt-2">
-            <button
-              onClick={handleSelectAllPermissions}
-              className="flex gap-1 h-6 items-center justify-center px-1 py-1 rounded hover:bg-[#f0f2f2]"
-            >
-              <p className="font-medium leading-4 relative shrink-0 text-xs text-[#4b595c] tracking-[0.12px] whitespace-pre">
-                Select All
-              </p>
-            </button>
-            <button
-              onClick={handleClearAllPermissions}
-              className="flex gap-1 h-6 items-center justify-center px-1 py-1 rounded hover:bg-[#f0f2f2]"
-            >
-              <p className="font-medium leading-4 relative shrink-0 text-xs text-[#4b595c] tracking-[0.12px] whitespace-pre">
-                Clear All
-              </p>
-            </button>
-          </div>
-          
-          {/* Permissions List */}
-          <div className="flex flex-col gap-3 items-start px-4 py-4 overflow-y-auto relative w-full flex-1" style={{ minHeight: 0, maxHeight: 'calc(100vh - 280px)' }}>
-            {filteredPermissionsForPanel.map((permission) => {
-              const isSelected = selectedPermissionsInPanel.includes(permission);
-              return (
-                <div key={permission} className="flex gap-4 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => handleTogglePermissionInPanel(permission)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center shrink-0 cursor-pointer ${
-                      isSelected ? 'border-[#16696d] bg-[#16696d]' : 'border-[#d2d8dc] bg-white'
-                    }`}
-                  >
-                    {isSelected && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px] flex-1">
-                    {permission}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-          
-          {/* Apply Button */}
-          <div className="border-t border-[#e3e7ea] border-solid flex items-center justify-end pb-4 pt-4 px-4 relative shrink-0 w-full">
-            <button
-              onClick={handleApplyPermissionsFromPanel}
-              className="px-4 py-2 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256]"
-            >
-              Apply
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
