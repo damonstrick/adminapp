@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import IdBadge from './IdBadge';
 import DataTable from './DataTable';
 import ShinyText from './ShinyText';
+import PRODUCT_LOGOS from './productLogos';
 import PhiAwarenessBanner from './PhiAwarenessBanner';
 import { usePhiBanner } from './PhiBannerContext';
 
@@ -396,10 +397,12 @@ export default function MemberProfile({ memberId }: MemberProfileProps) {
                           <div className="flex gap-4 items-center relative shrink-0 w-full">
                             <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
                               <div className="overflow-clip relative shrink-0 w-4 h-4">
-                                {product === 'Clear Contracts' ? (
-                                  <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                  </svg>
+                                {PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS] ? (
+                                  <img
+                                    src={PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS]}
+                                    alt={`${product} logo`}
+                                    className="w-4 h-4 object-contain"
+                                  />
                                 ) : (
                                   <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
