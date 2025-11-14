@@ -300,35 +300,6 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
           </div>
         </div>
         <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-          {/* Members Card */}
-          <div className="bg-white border border-[#e3e7ea] border-solid h-12 relative rounded-lg shrink-0 w-full cursor-pointer hover:bg-[#f7f8f8]">
-            <div className="flex flex-col h-12 items-start justify-center overflow-clip relative rounded-[inherit] w-full">
-              <div className="box-border flex flex-col gap-2 items-center justify-center p-3 relative shrink-0 w-full">
-                <div className="flex gap-4 items-center relative shrink-0 w-full">
-                  <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
-                    <div className="overflow-clip relative shrink-0 w-4 h-4">
-                      <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <div className="basis-0 flex flex-col gap-0.5 grow items-start min-h-px min-w-px relative shrink-0">
-                      <p className="font-medium justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#121313] text-xs tracking-[0.12px] w-full">
-                        Members
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex h-4 items-center justify-center relative shrink-0 w-4">
-                    <div className="flex-none rotate-90">
-                      <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Products Section */}
           <div className="bg-white border border-[#e3e7ea] border-solid relative rounded-lg shrink-0 w-full">
             <div className="flex flex-col items-start relative rounded-[inherit] w-full">
@@ -404,18 +375,28 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
                     <div className="box-border flex flex-col gap-2 items-center justify-center p-3 relative shrink-0 w-full">
                       <div className="flex gap-4 items-center relative shrink-0 w-full">
                         <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
-                          {PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS] ? (
-                            <img
-                              src={PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS]}
-                              alt={`${product} logo`}
-                              className="block"
-                            />
-                          ) : (
-                            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                            </svg>
-                          )}
+                          <div className="overflow-clip relative shrink-0 w-6 h-6 flex items-center justify-center">
+                            {PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS] ? (
+                              <div
+                                className="w-6 h-6 flex items-center justify-center rounded-br-[10px] rounded-tl-[10px] border"
+                                style={{
+                                  backgroundColor: PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS].background,
+                                  borderColor: PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS].border,
+                                }}
+                              >
+                                <img
+                                  src={PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS].image}
+                                  alt={`${product} logo`}
+                                  className="w-4 h-4 object-contain"
+                                />
+                              </div>
+                            ) : (
+                              <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                              </svg>
+                            )}
+                          </div>
                           <div className="basis-0 flex flex-col gap-0.5 grow items-start min-h-px min-w-px relative shrink-0">
                             <p className="font-medium justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#121313] text-xs tracking-[0.12px] w-full">
                               {product}
@@ -520,37 +501,6 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
             </div>
           </div>
 
-          {/* Group Preferences Card */}
-          <div className="bg-white border border-[#e3e7ea] border-solid relative rounded-lg shrink-0 w-full cursor-pointer hover:bg-[#f7f8f8]">
-            <div className="flex flex-col items-start overflow-clip relative rounded-[inherit] w-full">
-              <div className="box-border flex flex-col gap-2 items-center justify-center p-3 relative shrink-0 w-full">
-                <div className="flex gap-4 items-center relative shrink-0 w-full">
-                  <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
-                    <div className="overflow-clip relative shrink-0 w-4 h-4">
-                      <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                      </svg>
-                    </div>
-                    <div className="basis-0 flex flex-col gap-0.5 grow items-start min-h-px min-w-px relative shrink-0">
-                      <p className="font-medium justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#121313] text-xs tracking-[0.12px] w-full">
-                        Group Preferences
-                      </p>
-                      <p className="font-normal justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#6e8081] text-xs tracking-[0.12px] w-full">
-                        Non-product specific preferences for this group
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex h-4 items-center justify-center relative shrink-0 w-4">
-                    <div className="flex-none rotate-90">
-                      <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
         
         {/* Save All Button */}
@@ -566,8 +516,92 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
         )}
       </div>
 
-      {/* Deactivate Group Section */}
-      <div className="box-border flex flex-col gap-2 items-start pb-0 pt-6 px-0 relative shrink-0 w-full">
+      {/* Members Section */}
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+        <div className="w-full flex items-center gap-2 mb-4 h-6">
+          <div className="flex items-center gap-2 flex-1 h-6">
+            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <p className="font-semibold text-sm text-[#121313]">Members</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+          <div className="bg-white border border-[#e3e7ea] border-solid h-12 relative rounded-lg shrink-0 w-full cursor-pointer hover:bg-[#f7f8f8]">
+            <div className="flex flex-col h-12 items-start justify-center overflow-clip relative rounded-[inherit] w-full">
+              <div className="box-border flex flex-col gap-2 items-center justify-center p-3 relative shrink-0 w-full">
+                <div className="flex gap-4 items-center relative shrink-0 w-full">
+                  <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
+                    <div className="overflow-clip relative shrink-0 w-4 h-4">
+                      <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="basis-0 flex flex-col gap-0.5 grow items-start min-h-px min-w-px relative shrink-0">
+                      <p className="font-medium justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#121313] text-xs tracking-[0.12px] w-full">
+                        Members
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex h-4 items-center justify-center relative shrink-0 w-4">
+                    <div className="flex-none rotate-90">
+                      <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Save All Button */}
+      {dirtySectionsCount > 1 && (
+        <div className="flex justify-end w-full mt-6 mb-4">
+          <button
+            onClick={handleSaveAll}
+            className="px-4 py-2 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256]"
+          >
+            Save All ({dirtySectionsCount} sections)
+          </button>
+        </div>
+      )}
+
+      {/* Group Actions Section */}
+      <div className="box-border flex flex-col gap-4 items-start pb-0 pt-6 px-0 relative shrink-0 w-full">
+        <div className="bg-white border border-[#e3e7ea] border-solid relative rounded-lg shrink-0 w-full cursor-pointer hover:bg-[#f7f8f8]">
+          <div className="flex flex-col items-start overflow-clip relative rounded-[inherit] w-full">
+            <div className="box-border flex flex-col gap-2 items-center justify-center p-3 relative shrink-0 w-full">
+              <div className="flex gap-4 items-center relative shrink-0 w-full">
+                <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
+                  <div className="overflow-clip relative shrink-0 w-4 h-4">
+                    <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </div>
+                  <div className="basis-0 flex flex-col gap-0.5 grow items-start min-h-px min-w-px relative shrink-0">
+                    <p className="font-medium justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#121313] text-xs tracking-[0.12px] w-full">
+                      Group Preferences
+                    </p>
+                    <p className="font-normal justify-center leading-4 overflow-ellipsis overflow-hidden relative shrink-0 text-[#6e8081] text-xs tracking-[0.12px] w-full">
+                      Non-product specific preferences for this group
+                    </p>
+                  </div>
+                </div>
+                <div className="flex h-4 items-center justify-center relative shrink-0 w-4">
+                  <div className="flex-none rotate-90">
+                    <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-[#f7f8f8] border border-[#e3e7ea] border-solid box-border flex flex-col gap-5 items-start p-6 relative rounded-lg shrink-0 w-full">
           <div className="flex flex-col gap-5 items-start relative shrink-0 w-full">
             <div className="flex flex-col gap-3 items-start relative shrink-0">
