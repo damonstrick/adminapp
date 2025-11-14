@@ -88,9 +88,9 @@ export default function DirectDataAccessProductEntitlement() {
             )}
           </div>
         </div>
-        <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4 pb-6 pt-0">
+        <div className="flex flex-col items-start relative shrink-0 w-full pl-4 pb-6 pt-0">
           {/* Hospital Data */}
-          <div className="flex items-center justify-between relative shrink-0 w-full">
+          <div className="flex items-center justify-between relative shrink-0 w-full mb-6">
             <p className="font-medium text-xs text-[#121313]">Hospital Data</p>
             <input
               type="checkbox"
@@ -101,7 +101,7 @@ export default function DirectDataAccessProductEntitlement() {
           </div>
           
           {/* Payer Data */}
-          <div className="flex items-center justify-between relative shrink-0 w-full">
+          <div className="flex items-center justify-between relative shrink-0 w-full mb-6">
             <p className="font-medium text-xs text-[#121313]">Payer Data</p>
             <input
               type="checkbox"
