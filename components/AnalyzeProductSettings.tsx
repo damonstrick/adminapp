@@ -125,15 +125,29 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     msDrgSelected: true,
     hcpcsSelected: true,
   });
+  const [initialTopPayers, setInitialTopPayers] = useState<string[]>(['AL HMO', 'AZ PPO', 'Blue Choice']);
+  const [initialTopProviders, setInitialTopProviders] = useState<string[]>(['L37829', 'L26734', 'S27783']);
   
   // Current state
   const [analyzeRole, setAnalyzeRole] = useState<RoleOption>(initialRolesPermissions.analyzeRole);
   const [searchRole, setSearchRole] = useState<RoleOption>(initialRolesPermissions.searchRole);
   const [msDrgSelected, setMsDrgSelected] = useState(initialPreferences.msDrgSelected);
   const [hcpcsSelected, setHcpcsSelected] = useState(initialPreferences.hcpcsSelected);
+  const [topPayers, setTopPayers] = useState<string[]>(initialTopPayers);
+  const [topProviders, setTopProviders] = useState<string[]>(initialTopProviders);
   const [rolesPermissionsOpen, setRolesPermissionsOpen] = useState(true);
   const [scopeOpen, setScopeOpen] = useState(true);
   const [preferencesOpen, setPreferencesOpen] = useState(true);
+  const [topPayersOpen, setTopPayersOpen] = useState(true);
+  const [topProvidersOpen, setTopProvidersOpen] = useState(true);
+  const [payerPopoverOpen, setPayerPopoverOpen] = useState(false);
+  const [providerPopoverOpen, setProviderPopoverOpen] = useState(false);
+  const [payerSearchValue, setPayerSearchValue] = useState('');
+  const [providerSearchValue, setProviderSearchValue] = useState('');
+  const payerPopoverRef = useRef<HTMLDivElement>(null);
+  const providerPopoverRef = useRef<HTMLDivElement>(null);
+  const payerButtonRef = useRef<HTMLButtonElement>(null);
+  const providerButtonRef = useRef<HTMLButtonElement>(null);
 
   // Initialize with 2 condition groups as specified for Clear Rates
   const [conditions, setConditions] = useState<Condition[]>(initialScope.conditions);
@@ -153,7 +167,15 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   }) !== JSON.stringify(initialScope);
   const isPreferencesDirty = (msDrgSelected !== initialPreferences.msDrgSelected) || 
     (hcpcsSelected !== initialPreferences.hcpcsSelected);
-  const dirtySectionsCount = [isRolesPermissionsDirty, isScopeDirty, isPreferencesDirty].filter(Boolean).length;
+  const isTopPayersDirty = JSON.stringify(topPayers) !== JSON.stringify(initialTopPayers);
+  const isTopProvidersDirty = JSON.stringify(topProviders) !== JSON.stringify(initialTopProviders);
+  const dirtySectionsCount = [
+    isRolesPermissionsDirty,
+    isScopeDirty,
+    isPreferencesDirty,
+    isTopPayersDirty,
+    isTopProvidersDirty,
+  ].filter(Boolean).length;
   
   const handleSaveRolesPermissions = () => {
     setInitialRolesPermissions({
@@ -194,6 +216,28 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
       setTimeout(() => setSavedSection(null), 300);
     }, 1700);
   };
+
+  const handleSaveTopPayers = () => {
+    setInitialTopPayers([...topPayers]);
+    console.log('Saving top payer networks:', topPayers);
+    setSavedSection('topPayers');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('topPayers');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
+
+  const handleSaveTopProviders = () => {
+    setInitialTopProviders([...topProviders]);
+    console.log('Saving top services:', topProviders);
+    setSavedSection('topProviders');
+    setFadingOut(null);
+    setTimeout(() => {
+      setFadingOut('topProviders');
+      setTimeout(() => setSavedSection(null), 300);
+    }, 1700);
+  };
   
   const handleSaveAll = () => {
     // Track which sections were dirty before saving
@@ -201,10 +245,14 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     if (isRolesPermissionsDirty) sectionsToSave.push('rolesPermissions');
     if (isScopeDirty) sectionsToSave.push('scope');
     if (isPreferencesDirty) sectionsToSave.push('preferences');
+    if (isTopPayersDirty) sectionsToSave.push('topPayers');
+    if (isTopProvidersDirty) sectionsToSave.push('topProviders');
     
     handleSaveRolesPermissions();
     handleSaveScope();
     handleSavePreferences();
+    handleSaveTopPayers();
+    handleSaveTopProviders();
     
     setSavedSection('all');
     setSavedSectionsFromAll(sectionsToSave);
@@ -538,6 +586,92 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
       return condition;
     }).filter(Boolean) as Condition[]);
   };
+
+  const payerOptions = [
+    'AL HMO',
+    'AZ PPO',
+    'Blue Choice',
+    'Gold Network',
+    'Silver Network',
+    'Platinum Network',
+    'Basic Network',
+    'Premium Network',
+    'Standard Network',
+    'Elite Network',
+  ];
+
+  const providerOptions = [
+    'L37829',
+    'L26734',
+    'S27783',
+    'S27784',
+    'L37830',
+    'L26735',
+    'S27785',
+    'L37831',
+    'L26736',
+    'S27786',
+  ];
+
+  const getFilteredPayers = (search: string) => {
+    if (!search.trim()) return payerOptions;
+    return payerOptions.filter((p) => p.toLowerCase().includes(search.toLowerCase()));
+  };
+
+  const getFilteredProviders = (search: string) => {
+    if (!search.trim()) return providerOptions;
+    return providerOptions.filter((p) => p.toLowerCase().includes(search.toLowerCase()));
+  };
+
+  const addPayer = (payer: string) => {
+    if (!topPayers.includes(payer)) {
+      setTopPayers([...topPayers, payer]);
+    }
+    setPayerPopoverOpen(false);
+    setPayerSearchValue('');
+  };
+
+  const removePayer = (payer: string) => {
+    setTopPayers(topPayers.filter((p) => p !== payer));
+  };
+
+  const addProvider = (provider: string) => {
+    if (!topProviders.includes(provider)) {
+      setTopProviders([...topProviders, provider]);
+    }
+    setProviderPopoverOpen(false);
+    setProviderSearchValue('');
+  };
+
+  const removeProvider = (provider: string) => {
+    setTopProviders(topProviders.filter((p) => p !== provider));
+  };
+
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (
+        payerPopoverRef.current &&
+        !payerPopoverRef.current.contains(event.target as Node) &&
+        payerButtonRef.current &&
+        !payerButtonRef.current.contains(event.target as Node)
+      ) {
+        setPayerPopoverOpen(false);
+        setPayerSearchValue('');
+      }
+      if (
+        providerPopoverRef.current &&
+        !providerPopoverRef.current.contains(event.target as Node) &&
+        providerButtonRef.current &&
+        !providerButtonRef.current.contains(event.target as Node)
+      ) {
+        setProviderPopoverOpen(false);
+        setProviderSearchValue('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   // Generate AI summary from scope data with AND/OR relationships
   const generateScopeSummary = (): string => {
@@ -1058,47 +1192,52 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
 
       {/* Scope Section */}
       <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
-        <div className="w-full flex items-center gap-2 mb-4 h-6">
-          <button
-            onClick={() => setScopeOpen(!scopeOpen)}
-            className="flex items-center gap-2 flex-1 h-6"
-          >
-            <p className="font-semibold text-sm text-[#121313]">Scope</p>
-            {isScopeDirty && (
-              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
-            )}
-          </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isScopeDirty && savedSection !== 'scope' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveScope();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'scope' || (savedSection === 'all' && savedSectionsFromAll.includes('scope'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'scope' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
-          <button
-            onClick={() => setScopeOpen(!scopeOpen)}
-            className="flex items-center h-6"
-          >
-            <svg
-              className={`w-5 h-5 text-[#121313] transition-transform ${scopeOpen ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <div className="w-full flex flex-col gap-2 mb-4">
+          <div className="flex items-center gap-2 h-6">
+            <button
+              onClick={() => setScopeOpen(!scopeOpen)}
+              className="flex items-center gap-2 flex-1 h-6"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+              <p className="font-semibold text-sm text-[#121313]">Scope</p>
+              {isScopeDirty && (
+                <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+              )}
+            </button>
+            <div className="w-[60px] h-6 flex items-center justify-center">
+              {isScopeDirty && savedSection !== 'scope' && savedSection !== 'all' && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSaveScope();
+                  }}
+                  className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+                >
+                  Save
+                </button>
+              )}
+              {(savedSection === 'scope' || (savedSection === 'all' && savedSectionsFromAll.includes('scope'))) && (
+                <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'scope' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                  <ShinyText text="Saved" speed={3} />
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setScopeOpen(!scopeOpen)}
+              className="flex items-center h-6"
+            >
+              <svg
+                className={`w-5 h-5 text-[#121313] transition-transform ${scopeOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <p className="text-xs text-[#6e8081]">
+            Use scope to filter what this user can see. Leave it blank for full access.
+          </p>
         </div>
         {scopeOpen && (
         <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
@@ -1264,6 +1403,204 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
                 Turquoise also crosswalks HCPCS and APC codes, allowing outpatient rates to be compared consistently across both coding systems.
               </p>
             </div>
+          </div>
+
+          {/* Top Payer Networks */}
+          <div className="border-t border-[#e3e7ea] border-solid pt-4 w-full">
+            <div className="w-full flex items-center gap-2 mb-4 h-6">
+              <button
+                onClick={() => setTopPayersOpen(!topPayersOpen)}
+                className="flex items-center gap-2 flex-1 h-6"
+              >
+                <p className="font-semibold text-sm text-[#121313]">Top Payer Networks</p>
+                {isTopPayersDirty && <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>}
+              </button>
+              <div className="w-[60px] h-6 flex items-center justify-center">
+                {isTopPayersDirty && savedSection !== 'topPayers' && savedSection !== 'all' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSaveTopPayers();
+                    }}
+                    className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+                  >
+                    Save
+                  </button>
+                )}
+                {(savedSection === 'topPayers' || (savedSection === 'all' && savedSectionsFromAll.includes('topPayers'))) && (
+                  <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'topPayers' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                    <ShinyText text="Saved" speed={3} />
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setTopPayersOpen(!topPayersOpen)} className="flex items-center h-6">
+                <svg className={`w-5 h-5 text-[#121313] transition-transform ${topPayersOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            {topPayersOpen && (
+              <div className="flex flex-wrap gap-2 items-start w-full">
+                {topPayers.map((payer) => (
+                  <div key={payer} className="flex gap-1 items-center bg-[#f7f8f8] border border-[#e3e7ea] rounded-full px-2 py-0.5">
+                    <p className="font-normal text-[11px] text-[#121313]">{payer}</p>
+                    <button onClick={() => removePayer(payer)} className="w-3 h-3 flex items-center justify-center rounded-full hover:bg-[#e3e7ea]">
+                      <svg className="w-2.5 h-2.5 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+                <div className="relative">
+                  <button
+                    ref={payerButtonRef}
+                    onClick={() => setPayerPopoverOpen(!payerPopoverOpen)}
+                    className="flex items-center justify-center w-5 h-5 rounded-full border border-dashed border-[#e3e7ea] hover:bg-[#f7f8f8]"
+                  >
+                    <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                  {payerPopoverOpen && (
+                    <div
+                      ref={payerPopoverRef}
+                      className="absolute top-full left-0 mt-2 bg-white border border-[#e3e7ea] rounded-lg shadow-[0px_4px_16px_0px_rgba(0,0,0,0.16)] p-2 z-50 min-w-[224px]"
+                    >
+                      <div className="border-b border-[#e3e7ea] pb-3 mb-0">
+                        <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg flex gap-1 h-8 items-center px-3 py-2 w-full">
+                          <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          <input
+                            type="text"
+                            value={payerSearchValue}
+                            onChange={(e) => setPayerSearchValue(e.target.value)}
+                            placeholder="Search payers"
+                            className="flex-1 bg-transparent text-xs text-[#121313] placeholder:text-[#89989b] outline-none border-none"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-[2px] max-h-[200px] overflow-y-auto mt-3">
+                        {getFilteredPayers(payerSearchValue).map((payer) => (
+                          <button
+                            key={payer}
+                            onClick={() => addPayer(payer)}
+                            className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
+                          >
+                            <p className="font-normal text-xs text-[#121313]">{payer}</p>
+                          </button>
+                        ))}
+                        {getFilteredPayers(payerSearchValue).length === 0 && (
+                          <div className="w-full p-2 text-center">
+                            <p className="font-normal text-xs text-[#6e8081]">No results</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Top Services */}
+          <div className="border-t border-[#e3e7ea] border-solid pt-4 w-full">
+            <div className="w-full flex items-center gap-2 mb-4 h-6">
+              <button
+                onClick={() => setTopProvidersOpen(!topProvidersOpen)}
+                className="flex items-center gap-2 flex-1 h-6"
+              >
+                <p className="font-semibold text-sm text-[#121313]">Top Services</p>
+                {isTopProvidersDirty && <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>}
+              </button>
+              <div className="w-[60px] h-6 flex items-center justify-center">
+                {isTopProvidersDirty && savedSection !== 'topProviders' && savedSection !== 'all' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSaveTopProviders();
+                    }}
+                    className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+                  >
+                    Save
+                  </button>
+                )}
+                {(savedSection === 'topProviders' || (savedSection === 'all' && savedSectionsFromAll.includes('topProviders'))) && (
+                  <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'topProviders' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
+                    <ShinyText text="Saved" speed={3} />
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setTopProvidersOpen(!topProvidersOpen)} className="flex items-center h-6">
+                <svg className={`w-5 h-5 text-[#121313] transition-transform ${topProvidersOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            {topProvidersOpen && (
+              <div className="flex flex-wrap gap-2 items-start w-full">
+                {topProviders.map((provider) => (
+                  <div key={provider} className="flex gap-1 items-center bg-[#f7f8f8] border border-[#e3e7ea] rounded-full px-2 py-0.5">
+                    <p className="font-normal text-[11px] text-[#121313]">{provider}</p>
+                    <button onClick={() => removeProvider(provider)} className="w-3 h-3 flex items-center justify-center rounded-full hover:bg-[#e3e7ea]">
+                      <svg className="w-2.5 h-2.5 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+                <div className="relative">
+                  <button
+                    ref={providerButtonRef}
+                    onClick={() => setProviderPopoverOpen(!providerPopoverOpen)}
+                    className="flex items-center justify-center w-5 h-5 rounded-full border border-dashed border-[#e3e7ea] hover:bg-[#f7f8f8]"
+                  >
+                    <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                  {providerPopoverOpen && (
+                    <div
+                      ref={providerPopoverRef}
+                      className="absolute top-full left-0 mt-2 bg-white border border-[#e3e7ea] rounded-lg shadow-[0px_4px_16px_0px_rgba(0,0,0,0.16)] p-2 z-50 min-w-[224px]"
+                    >
+                      <div className="border-b border-[#e3e7ea] pb-3 mb-0">
+                        <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg flex gap-1 h-8 items-center px-3 py-2 w-full">
+                          <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          <input
+                            type="text"
+                            value={providerSearchValue}
+                            onChange={(e) => setProviderSearchValue(e.target.value)}
+                            placeholder="Search providers"
+                            className="flex-1 bg-transparent text-xs text-[#121313] placeholder:text-[#89989b] outline-none border-none"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-[2px] max-h-[200px] overflow-y-auto mt-3">
+                        {getFilteredProviders(providerSearchValue).map((provider) => (
+                          <button
+                            key={provider}
+                            onClick={() => addProvider(provider)}
+                            className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
+                          >
+                            <p className="font-normal text-xs text-[#121313]">{provider}</p>
+                          </button>
+                        ))}
+                        {getFilteredProviders(providerSearchValue).length === 0 && (
+                          <div className="w-full p-2 text-center">
+                            <p className="font-normal text-xs text-[#6e8081]">No results</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

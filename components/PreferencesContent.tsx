@@ -9,7 +9,7 @@ const ALL_PAYER_OPTIONS = ['Aetna', 'Blue Cross Blue Shield', 'Cigna', 'UnitedHe
 const ALL_PROVIDER_OPTIONS = ['St. Mary\'s Medical Center', 'Regional Health Network', 'Community Care Clinic', 'Metro General Hospital', 'Riverside Medical Group', 'Central Health System'];
 
 export default function PreferencesContent() {
-  const { showPhiBanner, setShowPhiBanner } = usePhiBanner();
+  const { showPhiBanner } = usePhiBanner();
   
   // Track which sections just saved
   const [savedSection, setSavedSection] = useState<string | null>(null);
@@ -22,32 +22,35 @@ export default function PreferencesContent() {
     msDrgSelected: true,
     hcpcsSelected: true,
   });
-  const [initialPhiBannerEnabled, setInitialPhiBannerEnabled] = useState(showPhiBanner);
-
-  // Sync initial state when component mounts
-  useEffect(() => {
-    setInitialPhiBannerEnabled(showPhiBanner);
-  }, []);
+  const [initialServiceLineFile, setInitialServiceLineFile] = useState<File | null>(null);
 
   // Current state
   const [topPayers, setTopPayers] = useState<string[]>([]);
   const [topProviders, setTopProviders] = useState<string[]>([]);
   const [msDrgSelected, setMsDrgSelected] = useState(true);
   const [hcpcsSelected, setHcpcsSelected] = useState(true);
+  const [customServiceLineFile, setCustomServiceLineFile] = useState<File | null>(null);
 
   // Dirty state tracking
   const isTopPayersDirty = JSON.stringify([...topPayers].sort()) !== JSON.stringify([...initialTopPayers].sort());
   const isTopProvidersDirty = JSON.stringify([...topProviders].sort()) !== JSON.stringify([...initialTopProviders].sort());
   const isCodeTypesDirty = (msDrgSelected !== initialCodeTypes.msDrgSelected) || 
     (hcpcsSelected !== initialCodeTypes.hcpcsSelected);
-  const isPhiBannerDirty = showPhiBanner !== initialPhiBannerEnabled;
-  const dirtySectionsCount = [isTopPayersDirty, isTopProvidersDirty, isCodeTypesDirty, isPhiBannerDirty].filter(Boolean).length;
+  const isServiceLineFileDirty =
+    (customServiceLineFile?.name || '') !== (initialServiceLineFile?.name || '') ||
+    (customServiceLineFile?.size || 0) !== (initialServiceLineFile?.size || 0);
+  const dirtySectionsCount = [
+    isTopPayersDirty,
+    isTopProvidersDirty,
+    isCodeTypesDirty,
+    isServiceLineFileDirty,
+  ].filter(Boolean).length;
 
   // Accordion states
   const [topPayersOpen, setTopPayersOpen] = useState(true);
   const [topProvidersOpen, setTopProvidersOpen] = useState(true);
   const [codeTypesOpen, setCodeTypesOpen] = useState(true);
-  const [phiBannerOpen, setPhiBannerOpen] = useState(true);
+  const [serviceLineFileOpen, setServiceLineFileOpen] = useState(true);
 
   // Popover states
   const [payerPopoverOpen, setPayerPopoverOpen] = useState(false);
@@ -58,6 +61,7 @@ export default function PreferencesContent() {
   const providerPopoverRef = useRef<HTMLDivElement>(null);
   const payerButtonRef = useRef<HTMLButtonElement>(null);
   const providerButtonRef = useRef<HTMLButtonElement>(null);
+  const serviceLineFileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter options
   const getFilteredPayers = (searchValue: string): string[] => {
@@ -99,6 +103,18 @@ export default function PreferencesContent() {
 
   const removeProvider = (provider: string) => {
     setTopProviders(topProviders.filter(p => p !== provider));
+  };
+
+  const handleServiceLineFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null;
+    setCustomServiceLineFile(file);
+  };
+
+  const handleClearServiceLineFile = () => {
+    setCustomServiceLineFile(null);
+    if (serviceLineFileInputRef.current) {
+      serviceLineFileInputRef.current.value = '';
+    }
   };
 
   // Click outside handlers
@@ -144,10 +160,10 @@ export default function PreferencesContent() {
     setTimeout(() => setSavedSection(null), 2000);
   };
 
-  const handleSavePhiBanner = () => {
-    setInitialPhiBannerEnabled(showPhiBanner);
-    console.log('Saving PHI banner preference:', showPhiBanner);
-    setSavedSection('phiBanner');
+  const handleSaveServiceLineFile = () => {
+    setInitialServiceLineFile(customServiceLineFile);
+    console.log('Saving custom service line file:', customServiceLineFile?.name || 'None');
+    setSavedSection('serviceLineFile');
     setTimeout(() => setSavedSection(null), 2000);
   };
 
@@ -156,12 +172,12 @@ export default function PreferencesContent() {
     if (isTopPayersDirty) sectionsToSave.push('topPayers');
     if (isTopProvidersDirty) sectionsToSave.push('topProviders');
     if (isCodeTypesDirty) sectionsToSave.push('codeTypes');
-    if (isPhiBannerDirty) sectionsToSave.push('phiBanner');
+    if (isServiceLineFileDirty) sectionsToSave.push('serviceLineFile');
     
     handleSaveTopPayers();
     handleSaveTopProviders();
     handleSaveCodeTypes();
-    handleSavePhiBanner();
+    handleSaveServiceLineFile();
     
     setSavedSection('all');
     setSavedSectionsFromAll(sectionsToSave);
@@ -181,15 +197,12 @@ export default function PreferencesContent() {
       )}
 
       {/* Top Payers Section */}
-      <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
+    <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setTopPayersOpen(!topPayersOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
             <p className="font-semibold text-sm text-[#121313]">Top Payers</p>
             {isTopPayersDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
@@ -307,16 +320,13 @@ export default function PreferencesContent() {
         )}
       </div>
 
-      {/* Top Providers Section */}
-      <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
+    {/* Top Providers Section */}
+      <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setTopProvidersOpen(!topProvidersOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
             <p className="font-semibold text-sm text-[#121313]">Top Providers</p>
             {isTopProvidersDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
@@ -435,15 +445,12 @@ export default function PreferencesContent() {
       </div>
 
       {/* Code Type Crosswalks Section */}
-      <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
+      <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setCodeTypesOpen(!codeTypesOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
             <p className="font-semibold text-sm text-[#121313]">Code Type Crosswalks</p>
             {isCodeTypesDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
@@ -576,45 +583,42 @@ export default function PreferencesContent() {
         )}
       </div>
 
-      {/* PHI Awareness Banner Section */}
-      <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
+      {/* Custom Service Line File */}
+      <div className="border-b border-[rgba(0,0,0,0.1)] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
-            onClick={() => setPhiBannerOpen(!phiBannerOpen)}
+            onClick={() => setServiceLineFileOpen(!serviceLineFileOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <p className="font-semibold text-sm text-[#121313]">PHI Awareness Banner</p>
-            {isPhiBannerDirty && (
+            <p className="font-semibold text-sm text-[#121313]">Custom Service Line File</p>
+            {isServiceLineFileDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
           <div className="w-[60px] h-6 flex items-center justify-center">
-            {isPhiBannerDirty && savedSection !== 'phiBanner' && savedSection !== 'all' && (
+            {isServiceLineFileDirty && savedSection !== 'serviceLineFile' && savedSection !== 'all' && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleSavePhiBanner();
+                  handleSaveServiceLineFile();
                 }}
                 className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
               >
                 Save
               </button>
             )}
-            {(savedSection === 'phiBanner' || (savedSection === 'all' && savedSectionsFromAll.includes('phiBanner'))) && (
+            {(savedSection === 'serviceLineFile' || (savedSection === 'all' && savedSectionsFromAll.includes('serviceLineFile'))) && (
               <div className="text-xs font-medium">
                 <ShinyText text="Saved" speed={3} />
               </div>
             )}
           </div>
           <button
-            onClick={() => setPhiBannerOpen(!phiBannerOpen)}
+            onClick={() => setServiceLineFileOpen(!serviceLineFileOpen)}
             className="flex items-center h-6"
           >
             <svg
-              className={`w-5 h-5 text-[#121313] transition-transform ${phiBannerOpen ? 'rotate-180' : ''}`}
+              className={`w-5 h-5 text-[#121313] transition-transform ${serviceLineFileOpen ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -623,24 +627,89 @@ export default function PreferencesContent() {
             </svg>
           </button>
         </div>
-        {phiBannerOpen && (
-          <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-            <div className="flex items-start justify-between relative shrink-0 w-full">
-              <div className="flex-1">
-                <p className="font-medium text-xs text-[#121313] mb-1">Show PHI Awareness Banner</p>
-                <p className="font-normal text-xs text-[#6e8081]">
-                  Display the Protected Health Information (PHI) awareness banner across all relevant pages
+        {serviceLineFileOpen && (
+          <div className="flex flex-col gap-4 w-full">
+            <p className="text-xs text-[#4b595c] leading-4">
+              Upload a CSV or XLSX that defines the service lines this PRG should honor. Once saved, the file will power custom service line targeting anywhere these preferences are referenced.
+            </p>
+            <div className="w-full rounded-lg bg-[#f7f8f8] px-4 py-3 flex items-center gap-4">
+              <button
+                onClick={() => serviceLineFileInputRef.current?.click()}
+                className="px-4 py-2 bg-[#16696d] text-white rounded-lg text-xs font-semibold hover:bg-[#0d5256]"
+              >
+                Choose File
+              </button>
+              <div className="flex-1 flex items-center justify-between">
+                {customServiceLineFile ? (
+                  <>
+                    <div className="flex flex-col">
+                      <p className="font-semibold text-sm text-[#121313]">{customServiceLineFile.name}</p>
+                      <p className="text-xs text-[#6e8081]">
+                        {(customServiceLineFile.size / 1024).toFixed(1)} KB · CSV/XLSX
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleClearServiceLineFile}
+                      className="text-xs font-medium text-[#16696d] hover:text-[#0d5256]"
+                    >
+                      Remove
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-xs text-[#6e8081]">Upload CSV or XLSX · 5MB max</p>
+                )}
+              </div>
+              <input
+                ref={serviceLineFileInputRef}
+                type="file"
+                accept=".csv,.xlsx"
+                className="hidden"
+                onChange={handleServiceLineFileChange}
+              />
+            </div>
+            <div className="w-full bg-white border border-[#e3e7ea] rounded-lg p-6 flex flex-col gap-6">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-[#e6f4f3] flex items-center justify-center">
+                  <svg
+                    className="w-3.5 h-3.5 text-[#1b827e]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 18h.01M12 6v6"
+                    />
+                    <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-[#121313]">CSV Format</p>
+              </div>
+              <div className="flex flex-col gap-3 text-xs text-[#4b595c] leading-5">
+                <p>File must be a .csv and have the following three columns:</p>
+                <p>
+                  <span className="font-semibold text-[#121313]">1. code:</span>{' '}
+                  The billing code (e.g. 99213). Do not list a code more than once.
+                </p>
+                <p>
+                  <span className="font-semibold text-[#121313]">2. code_type:</span>{' '}
+                  Billing code type. Allowed values are CPT, HCPCS, MS-DRG, APR-DRG, RC, APC, and EAPG; all other code type values will be excluded from the report.
+                </p>
+                <p>
+                  <span className="font-semibold text-[#121313]">3. category_name:</span>{' '}
+                  String identifying the service line or category. 20 characters recommended, maximum 30 characters.
                 </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={showPhiBanner}
-                  onChange={(e) => setShowPhiBanner(e.target.checked)}
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#16696d]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#16696d]"></div>
-              </label>
+              <div className="flex flex-wrap gap-3">
+                <button className="px-4 py-2 rounded-lg border border-[#d2d8dc] bg-white text-xs font-medium text-[#121313] hover:bg-[#f0f2f2]">
+                  Learn About The File Setup
+                </button>
+                <button className="px-4 py-2 rounded-lg border border-[#d2d8dc] bg-white text-xs font-medium text-[#121313] hover:bg-[#f0f2f2]">
+                  Download Template
+                </button>
+              </div>
             </div>
           </div>
         )}

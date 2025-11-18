@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import DataTable from './DataTable';
+import PRODUCT_LOGOS from './productLogos';
+import { ANALYZE_PRODUCT_NAME } from '@/constants/products';
 
 interface Group {
   name: string;
@@ -11,7 +13,7 @@ interface Group {
   id: string;
 }
 
-const allGroups: Group[] = [
+const baseGroups: Group[] = [
   { name: 'Company Admins', description: 'Full administrative access to all platform features and settings', members: 12, products: ['Clear Contracts', 'Analyze'], id: 'company-admins' },
   { name: 'Product Managers', description: 'Access to product configuration and analytics dashboard', members: 28, products: ['Clear Contracts', 'Analyze'], id: 'product-managers' },
   { name: 'Sales Team', description: 'Access to sales data, contracts, and customer information', members: 45, products: ['Clear Contracts'], id: 'sales-team' },
@@ -33,6 +35,13 @@ const allGroups: Group[] = [
   { name: 'External Consultants', description: 'Limited access for external consulting partners', members: 13, products: ['Clear Contracts'], id: 'external-consultants' },
   { name: 'Regional Managers', description: 'Regional data access and management capabilities', members: 17, products: ['Clear Contracts', 'Analyze'], id: 'regional-managers' },
 ];
+
+const allGroups: Group[] = baseGroups.map((group) => ({
+  ...group,
+  products: group.products.map((product) =>
+    product === 'Analyze' ? ANALYZE_PRODUCT_NAME : product
+  ),
+}));
 
 const ROW_HEIGHT = 64; // h-16 = 64px
 const TABLE_HEADER_HEIGHT = 32;
@@ -194,16 +203,40 @@ export default function GroupsContent() {
           header: 'Products',
           wrap: true,
           render: (group) => (
-            <>
-              {group.products.map((product, productIndex) => (
-                <div
-                  key={productIndex}
-                  className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium"
-                >
-                  {product}
-                </div>
-              ))}
-            </>
+            <div className="flex flex-wrap gap-2 items-start">
+              {group.products.map((product, productIndex) => {
+                const config = PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS];
+                if (config) {
+                  return (
+                      <div
+                        key={`${product}-${productIndex}`}
+                        className="w-6 h-6 flex items-center justify-center"
+                        title={product}
+                      >
+                        {config?.image ? (
+                          <img
+                            src={config.image}
+                            alt={`${product} logo`}
+                            className="w-6 h-6 object-contain"
+                          />
+                        ) : (
+                          <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
+                            {product}
+                          </div>
+                        )}
+                      </div>
+                  );
+                }
+                return (
+                  <div
+                    key={`${product}-${productIndex}`}
+                    className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium"
+                  >
+                    {product}
+                  </div>
+                );
+              })}
+            </div>
           ),
         },
         {

@@ -398,25 +398,14 @@ export default function MemberProfile({ memberId }: MemberProfileProps) {
                           <div className="flex gap-4 items-center relative shrink-0 w-full">
                             <div className="basis-0 flex gap-2 grow items-center min-h-px min-w-px relative shrink-0">
                               <div className="overflow-clip relative shrink-0 w-6 h-6 flex items-center justify-center">
-                                {PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS] ? (
-                                  <div
-                                    className="w-6 h-6 flex items-center justify-center rounded-br-[10px] rounded-tl-[10px] border"
-                                    style={{
-                                      backgroundColor: PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS].background,
-                                      borderColor: PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS].border,
-                                    }}
-                                  >
-                                    <img
-                                      src={PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS].image}
-                                      alt={`${product} logo`}
-                                      className="w-4 h-4 object-contain"
-                                    />
-                                  </div>
+                                {PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS]?.image ? (
+                                  <img
+                                    src={PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS].image}
+                                    alt={`${product} logo`}
+                                    className="w-6 h-6 object-contain"
+                                  />
                                 ) : (
-                                  <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                                  </svg>
+                                  <div className="w-3 h-3 bg-[#cfd6d8] rounded-sm" />
                                 )}
                               </div>
                               <div className="basis-0 flex flex-col gap-0.5 grow items-start min-h-px min-w-px relative shrink-0">
@@ -601,16 +590,30 @@ export default function MemberProfile({ memberId }: MemberProfileProps) {
                 header: 'Products',
                 wrap: true,
                 render: (group) => (
-                  <>
-                    {group.products.map((product, productIndex) => (
-                      <div
-                        key={productIndex}
-                        className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium"
-                      >
-                        {product}
-                      </div>
-                    ))}
-                  </>
+                  <div className="flex flex-wrap gap-2 items-start">
+                    {group.products.map((product, productIndex) => {
+                      const config = PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS];
+                      return (
+                        <div
+                          key={`${product}-${productIndex}`}
+                          className="w-6 h-6 flex items-center justify-center"
+                          title={product}
+                        >
+                          {config?.image ? (
+                            <img
+                              src={config.image}
+                              alt={`${product} logo`}
+                              className="w-6 h-6 object-contain"
+                            />
+                          ) : (
+                            <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
+                              {product}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 ),
               },
               {

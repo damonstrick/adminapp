@@ -130,7 +130,7 @@ export default function DataTable<T extends { id?: string }>({
                   : column.align === 'center' 
                   ? 'flex gap-1 items-center justify-center px-3' 
                   : column.wrap
-                  ? 'flex gap-2 items-center pl-3 pr-2'
+                  ? 'flex gap-2 items-start pl-3 pr-2'
                   : 'flex gap-2 items-start pl-3 pr-2';
 
                 const wrapClass = column.wrap ? 'flex-wrap' : '';

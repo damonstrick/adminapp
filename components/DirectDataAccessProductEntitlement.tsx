@@ -80,8 +80,32 @@ export default function DirectDataAccessProductEntitlement() {
       </div>
 
       {/* Data Access Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-0 relative shrink-0 w-full">
-        <SectionHeader title="Data Access" showDirtyDot={isDataAccessDirty} />
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-[24px] relative shrink-0 w-full">
+        <SectionHeader
+          title="Data Access"
+          showDirtyDot={isDataAccessDirty}
+          action={
+            <>
+              {isDataAccessDirty && savedSection !== 'dataAccess' && savedSection !== 'all' && (
+                <button
+                  onClick={handleSaveDataAccess}
+                  className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256]"
+                >
+                  Save
+                </button>
+              )}
+              {(savedSection === 'dataAccess' || savedSection === 'all') && (
+                <div
+                  className={`text-xs font-medium transition-opacity duration-300 ${
+                    fadingOut === 'dataAccess' || fadingOut === 'all' ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  <ShinyText text="Saved" speed={3} />
+                </div>
+              )}
+            </>
+          }
+        />
         <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4 pt-0">
           {/* Hospital Data */}
           <div className="flex items-center justify-between relative shrink-0 w-full">
@@ -115,22 +139,6 @@ export default function DirectDataAccessProductEntitlement() {
           </div>
         </div>
         
-        {/* Save button */}
-        <div className="w-full flex justify-end mt-4">
-          {isDataAccessDirty && savedSection !== 'dataAccess' && savedSection !== 'all' && (
-            <button
-              onClick={handleSaveDataAccess}
-              className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256]"
-            >
-              Save
-            </button>
-          )}
-          {(savedSection === 'dataAccess' || (savedSection === 'all')) && (
-            <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'dataAccess' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-              <ShinyText text="Saved" speed={3} />
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Trino Information Section */}

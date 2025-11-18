@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import DataTable from './DataTable';
+import PRODUCT_LOGOS from './productLogos';
+import { ANALYZE_PRODUCT_NAME } from '@/constants/products';
 
 interface Entity {
   id: string;
@@ -11,7 +13,7 @@ interface Entity {
   members: number;
 }
 
-const allEntities: Entity[] = [
+const baseEntities: Entity[] = [
   { id: '1', name: 'St. Mary\'s Medical Center', type: 'Hospital', access: ['Clear Contracts', 'Analyze'], members: 342 },
   { id: '2', name: 'Regional Health Network', type: 'Healthcare System', access: ['Clear Contracts'], members: 128 },
   { id: '3', name: 'Community Care Clinic', type: 'Clinic', access: ['Analyze'], members: 45 },
@@ -33,6 +35,13 @@ const allEntities: Entity[] = [
   { id: '19', name: 'Downtown Health Clinic', type: 'Clinic', access: ['Clear Contracts', 'Analyze'], members: 56 },
   { id: '20', name: 'Highland Medical System', type: 'Healthcare System', access: ['Analyze'], members: 387 },
 ];
+
+const allEntities: Entity[] = baseEntities.map((entity) => ({
+  ...entity,
+  access: entity.access.map((product) =>
+    product === 'Analyze' ? ANALYZE_PRODUCT_NAME : product
+  ),
+}));
 
 const ROW_HEIGHT = 64; // h-16 = 64px
 const TABLE_HEADER_HEIGHT = 32;
@@ -190,16 +199,40 @@ export default function AnalyzeContent() {
           header: 'Access',
           wrap: true,
           render: (entity) => (
-            <>
-              {entity.access.map((product, productIndex) => (
-                <div
-                  key={productIndex}
-                  className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium"
-                >
-                  {product}
-                </div>
-              ))}
-            </>
+            <div className="flex flex-wrap gap-2 items-start">
+              {entity.access.map((product, productIndex) => {
+                const config = PRODUCT_LOGOS[product as keyof typeof PRODUCT_LOGOS];
+                if (config) {
+                  return (
+                    <div
+                      key={`${product}-${productIndex}`}
+                      className="w-6 h-6 flex items-center justify-center"
+                      title={product}
+                    >
+                      {config?.image ? (
+                        <img
+                          src={config.image}
+                          alt={`${product} logo`}
+                          className="w-6 h-6 object-contain"
+                        />
+                      ) : (
+                        <div className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
+                          {product}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={`${product}-${productIndex}`}
+                    className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium"
+                  >
+                    {product}
+                  </div>
+                );
+              })}
+            </div>
           ),
         },
         {

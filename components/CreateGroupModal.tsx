@@ -6,7 +6,15 @@ import { useToast } from './ToastProvider';
 interface CreateGroupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  existingMembers?: string[]; // Emails of existing members
+  existingMembers?: string[];
+  existingTqUsers?: string[];
+}
+
+type EmailStatus = 'existing-member' | 'existing-user' | 'new-user';
+
+interface EmailTag {
+  email: string;
+  status: EmailStatus;
 }
 
 // Mock data - in a real app, this would come from API calls
@@ -39,16 +47,19 @@ const DEFAULT_EXISTING_MEMBERS = [
   'jared.kaufman@gmail.com',
 ];
 
+const DEFAULT_EXISTING_TQ_USERS = ['sammyvirji@email.com', 'jamison.mueller@email.com'];
+
 export default function CreateGroupModal({ 
   isOpen, 
   onClose,
-  existingMembers = DEFAULT_EXISTING_MEMBERS
+  existingMembers = DEFAULT_EXISTING_MEMBERS,
+  existingTqUsers = DEFAULT_EXISTING_TQ_USERS,
 }: CreateGroupModalProps) {
   const { showToast } = useToast();
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
   const [membersInput, setMembersInput] = useState('');
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [memberTags, setMemberTags] = useState<EmailTag[]>([]);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const [autocompletePosition, setAutocompletePosition] = useState({ top: 0, left: 0, width: 0 });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,10 +72,24 @@ export default function CreateGroupModal({
       setGroupName('');
       setDescription('');
       setMembersInput('');
-      setSelectedMembers([]);
+      setMemberTags([]);
       setShowAutocomplete(false);
     }
   }, [isOpen]);
+
+  const getAllEmails = (): string[] => {
+    return [...new Set([...existingMembers, ...existingTqUsers])];
+  };
+
+  const getEmailStatus = (email: string): EmailStatus => {
+    if (existingMembers.some(m => m.toLowerCase() === email.toLowerCase())) {
+      return 'existing-member';
+    }
+    if (existingTqUsers.some(u => u.toLowerCase() === email.toLowerCase())) {
+      return 'existing-user';
+    }
+    return 'new-user';
+  };
 
   // Get filtered autocomplete suggestions
   const getAutocompleteSuggestions = (): string[] => {
@@ -72,10 +97,10 @@ export default function CreateGroupModal({
       return [];
     }
     const lowerInput = membersInput.toLowerCase();
-    return existingMembers
+    return getAllEmails()
       .filter(email => 
         email.toLowerCase().includes(lowerInput) && 
-        !selectedMembers.some(m => m.toLowerCase() === email.toLowerCase())
+        !memberTags.some(tag => tag.email.toLowerCase() === email.toLowerCase())
       )
       .slice(0, 5); // Limit to 5 suggestions
   };
@@ -92,7 +117,7 @@ export default function CreateGroupModal({
         width: rect.width,
       });
     }
-  }, [showAutocomplete, membersInput, selectedMembers]);
+  }, [showAutocomplete, membersInput, memberTags]);
 
   // Handle click outside to close autocomplete
   useEffect(() => {
@@ -136,11 +161,15 @@ export default function CreateGroupModal({
     if (value.endsWith(',') || value.endsWith(' ')) {
       const emails = parseEmails(value);
       if (emails.length > 0) {
-        const newEmails = emails.filter(
-          email => !selectedMembers.some(m => m.toLowerCase() === email.toLowerCase())
-        );
-        
-        setSelectedMembers([...selectedMembers, ...newEmails]);
+        const newTags = emails
+          .filter(email => !memberTags.some(tag => tag.email.toLowerCase() === email.toLowerCase()))
+          .map(email => ({
+            email,
+            status: getEmailStatus(email),
+          }));
+        if (newTags.length > 0) {
+          setMemberTags([...memberTags, ...newTags]);
+        }
         setMembersInput('');
         setShowAutocomplete(false);
       }
@@ -149,8 +178,8 @@ export default function CreateGroupModal({
 
   const handleMembersInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     // Remove last member on backspace if input is empty
-    if (e.key === 'Backspace' && membersInput === '' && selectedMembers.length > 0) {
-      setSelectedMembers(selectedMembers.slice(0, -1));
+    if (e.key === 'Backspace' && membersInput === '' && memberTags.length > 0) {
+      setMemberTags(memberTags.slice(0, -1));
     }
     // Add email on Enter (if no autocomplete suggestions or if selecting first suggestion)
     if (e.key === 'Enter') {
@@ -158,15 +187,21 @@ export default function CreateGroupModal({
       if (autocompleteSuggestions.length > 0 && membersInput) {
         // Select first autocomplete suggestion
         const selectedEmail = autocompleteSuggestions[0];
-        if (!selectedMembers.some(m => m.toLowerCase() === selectedEmail.toLowerCase())) {
-          setSelectedMembers([...selectedMembers, selectedEmail]);
+        if (!memberTags.some(tag => tag.email.toLowerCase() === selectedEmail.toLowerCase())) {
+          setMemberTags([
+            ...memberTags,
+            { email: selectedEmail, status: getEmailStatus(selectedEmail) },
+          ]);
           setMembersInput('');
           setShowAutocomplete(false);
         }
       } else if (membersInput && membersInput.includes('@')) {
         // Add current input if it looks like an email
-        if (!selectedMembers.some(m => m.toLowerCase() === membersInput.toLowerCase())) {
-          setSelectedMembers([...selectedMembers, membersInput]);
+        if (!memberTags.some(tag => tag.email.toLowerCase() === membersInput.toLowerCase())) {
+          setMemberTags([
+            ...memberTags,
+            { email: membersInput, status: getEmailStatus(membersInput) },
+          ]);
           setMembersInput('');
           setShowAutocomplete(false);
         }
@@ -179,20 +214,23 @@ export default function CreateGroupModal({
   };
 
   const handleAutocompleteSelect = (email: string) => {
-    if (!selectedMembers.some(m => m.toLowerCase() === email.toLowerCase())) {
-      setSelectedMembers([...selectedMembers, email]);
+    if (!memberTags.some(tag => tag.email.toLowerCase() === email.toLowerCase())) {
+      setMemberTags([
+        ...memberTags,
+        { email, status: getEmailStatus(email) },
+      ]);
       setMembersInput('');
       setShowAutocomplete(false);
     }
   };
 
   const removeMember = (email: string) => {
-    setSelectedMembers(selectedMembers.filter(m => m !== email));
+    setMemberTags(memberTags.filter(tag => tag.email !== email));
   };
 
   const handleCreate = () => {
-    // TODO: Implement create group logic
-    console.log('Creating group:', { groupName, description, members: selectedMembers });
+    const members = memberTags.map(tag => tag.email);
+    console.log('Creating group:', { groupName, description, members });
     
     // Show success toast
     showToast(`Group "${groupName}" created successfully.`);
@@ -262,16 +300,41 @@ export default function CreateGroupModal({
               </p>
             </div>
             <div ref={inputContainerRef} className="bg-white border border-[#e3e7ea] border-solid flex flex-wrap gap-2 items-center px-3 py-2 relative rounded-[4px] shrink-0 w-full min-h-[40px]">
-              {selectedMembers.map((email) => (
+              {memberTags.map((tag) => (
                 <div
-                  key={email}
-                  className="bg-[#e8ebeb] flex gap-1 h-4 items-center justify-center px-2 py-0.5 relative rounded shrink-0"
+                  key={tag.email}
+                  className={`flex gap-1 h-4 items-center justify-center px-2 py-0.5 relative rounded shrink-0 ${
+                    tag.status === 'existing-member'
+                      ? 'bg-[#e8ebeb]'
+                      : tag.status === 'existing-user'
+                      ? 'bg-[#e4f8f6] border border-[#36c5ba]'
+                      : 'bg-[#fef4e4] border border-[#ffbb57]'
+                  }`}
                 >
+                  {tag.status !== 'existing-member' && (
+                    <svg
+                      className={`w-3 h-3 ${
+                        tag.status === 'existing-user' ? 'text-[#36c5ba]' : 'text-[#c96a00]'
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      {tag.status === 'existing-user' ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      ) : (
+                        <>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </>
+                      )}
+                    </svg>
+                  )}
                   <p className="font-medium leading-4 text-[#121313] text-[11px] tracking-[0.11px] whitespace-pre">
-                    {email}
+                    {tag.email}
                   </p>
                   <button
-                    onClick={() => removeMember(email)}
+                    onClick={() => removeMember(tag.email)}
                     className="relative shrink-0 w-3 h-3 flex items-center justify-center hover:opacity-70"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,7 +354,7 @@ export default function CreateGroupModal({
                     setShowAutocomplete(true);
                   }
                 }}
-                placeholder={selectedMembers.length === 0 ? "Enter email addresses (comma or space separated)..." : ""}
+                placeholder={memberTags.length === 0 ? "Enter email addresses (comma or space separated)..." : ""}
                 className="basis-0 font-normal grow leading-4 min-h-px min-w-[120px] relative shrink-0 text-[#121313] text-xs tracking-[0.12px] outline-none border-none bg-transparent placeholder:text-[#89989b]"
               />
             </div>
@@ -306,25 +369,40 @@ export default function CreateGroupModal({
                   width: `${autocompletePosition.width}px`,
                 }}
               >
-                {autocompleteSuggestions.map((email) => (
+                {autocompleteSuggestions.map((email) => {
+                  const status = getEmailStatus(email);
+                  return (
                   <button
                     key={email}
                     onClick={() => handleAutocompleteSelect(email)}
                     className="w-full flex gap-2 items-center p-2 hover:bg-[#f0f2f2] text-left"
                   >
-                    <svg className="w-3 h-3 text-[#6e8081] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    {status === 'existing-user' && (
+                      <svg className="w-3 h-3 text-[#36c5ba] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                    {status === 'new-user' && (
+                      <svg className="w-3 h-3 text-[#6e8081] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    )}
+                    {status === 'existing-member' && (
+                      <svg className="w-3 h-3 text-[#4b595c] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    )}
                     <p className="font-normal leading-4 text-xs text-[#121313] tracking-[0.12px]">
                       {email}
                     </p>
                   </button>
-                ))}
+                );
+                })}
               </div>
             )}
             <div className="box-border flex gap-1 items-center px-0 py-0 relative shrink-0 w-full">
               <p className="basis-0 font-normal grow leading-3 min-h-px min-w-px text-[#4b595c] text-[11px] tracking-[0.11px]">
-                You can add multiple members at once.
+                Add existing members or invite new teammates by email. We’ll send invites for anyone not already in TQ.
               </p>
             </div>
           </div>

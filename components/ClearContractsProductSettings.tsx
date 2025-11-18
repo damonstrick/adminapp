@@ -96,15 +96,12 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
       ],
     },
   ]);
-  const [initialPreferences, setInitialPreferences] = useState({
-    notifyOnDocUpload: true,
-    enableRenewalEmails: true,
-    enableFolderView: false,
-    rateSummaryCustomer: false,
-    enableDocumentHierarchy: false,
-    enableIntakeStatuses: false,
-    enableRenewalDates: false,
-    renewalsMs2: false,
+  const [initialFeatureToggles, setInitialFeatureToggles] = useState({
+    askTqContract: true,
+    askTqPayerPolicy: true,
+    documentViewer: true,
+    rateSummary: true,
+    scenarioModeling: true,
   });
   
   // Current state
@@ -113,16 +110,11 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
   const [rolesPermissionsOpen, setRolesPermissionsOpen] = useState(true);
   const [scopeOpen, setScopeOpen] = useState(true);
   const [preferencesOpen, setPreferencesOpen] = useState(true);
-
-  // Checkbox states for Preferences
-  const [notifyOnDocUpload, setNotifyOnDocUpload] = useState(initialPreferences.notifyOnDocUpload);
-  const [enableRenewalEmails, setEnableRenewalEmails] = useState(initialPreferences.enableRenewalEmails);
-  const [enableFolderView, setEnableFolderView] = useState(initialPreferences.enableFolderView);
-  const [rateSummaryCustomer, setRateSummaryCustomer] = useState(initialPreferences.rateSummaryCustomer);
-  const [enableDocumentHierarchy, setEnableDocumentHierarchy] = useState(initialPreferences.enableDocumentHierarchy);
-  const [enableIntakeStatuses, setEnableIntakeStatuses] = useState(initialPreferences.enableIntakeStatuses);
-  const [enableRenewalDates, setEnableRenewalDates] = useState(initialPreferences.enableRenewalDates);
-  const [renewalsMs2, setRenewalsMs2] = useState(initialPreferences.renewalsMs2);
+  const [askTqContract, setAskTqContract] = useState(initialFeatureToggles.askTqContract);
+  const [askTqPayerPolicy, setAskTqPayerPolicy] = useState(initialFeatureToggles.askTqPayerPolicy);
+  const [documentViewer, setDocumentViewer] = useState(initialFeatureToggles.documentViewer);
+  const [rateSummary, setRateSummary] = useState(initialFeatureToggles.rateSummary);
+  const [scenarioModeling, setScenarioModeling] = useState(initialFeatureToggles.scenarioModeling);
 
   // Initialize with 1 condition group (no OR conditions)
   const [conditions, setConditions] = useState<Condition[]>(initialScope);
@@ -131,16 +123,12 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
   const isRolesPermissionsDirty = selectedRole !== initialRolesPermissions.selectedRole;
   const isScopeDirty = JSON.stringify(conditions.sort((a, b) => a.id.localeCompare(b.id))) !== 
     JSON.stringify(initialScope.sort((a, b) => a.id.localeCompare(b.id)));
-  const isPreferencesDirty = JSON.stringify({
-    notifyOnDocUpload,
-    enableRenewalEmails,
-    enableFolderView,
-    rateSummaryCustomer,
-    enableDocumentHierarchy,
-    enableIntakeStatuses,
-    enableRenewalDates,
-    renewalsMs2,
-  }) !== JSON.stringify(initialPreferences);
+  const isPreferencesDirty =
+    askTqContract !== initialFeatureToggles.askTqContract ||
+    askTqPayerPolicy !== initialFeatureToggles.askTqPayerPolicy ||
+    documentViewer !== initialFeatureToggles.documentViewer ||
+    rateSummary !== initialFeatureToggles.rateSummary ||
+    scenarioModeling !== initialFeatureToggles.scenarioModeling;
   const dirtySectionsCount = [isRolesPermissionsDirty, isScopeDirty, isPreferencesDirty].filter(Boolean).length;
   
   const handleSaveRolesPermissions = () => {
@@ -168,25 +156,19 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
   };
   
   const handleSavePreferences = () => {
-    setInitialPreferences({
-      notifyOnDocUpload,
-      enableRenewalEmails,
-      enableFolderView,
-      rateSummaryCustomer,
-      enableDocumentHierarchy,
-      enableIntakeStatuses,
-      enableRenewalDates,
-      renewalsMs2,
+    setInitialFeatureToggles({
+      askTqContract,
+      askTqPayerPolicy,
+      documentViewer,
+      rateSummary,
+      scenarioModeling,
     });
-    console.log('Saving preferences:', {
-      notifyOnDocUpload,
-      enableRenewalEmails,
-      enableFolderView,
-      rateSummaryCustomer,
-      enableDocumentHierarchy,
-      enableIntakeStatuses,
-      enableRenewalDates,
-      renewalsMs2,
+    console.log('Saving customize features:', {
+      askTqContract,
+      askTqPayerPolicy,
+      documentViewer,
+      rateSummary,
+      scenarioModeling,
     });
     setSavedSection('preferences');
     setFadingOut(null);
@@ -518,15 +500,12 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
       )}
       
       {/* Roles & Permissions Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setRolesPermissionsOpen(!rolesPermissionsOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
             <p className="font-semibold text-sm text-[#121313]">Roles & Permissions</p>
             {isRolesPermissionsDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
@@ -601,15 +580,12 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
       </div>
 
       {/* Scope Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setScopeOpen(!scopeOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
             <p className="font-semibold text-sm text-[#121313]">Scope</p>
             {isScopeDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
@@ -944,17 +920,14 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
         )}
       </div>
 
-      {/* Preferences Section */}
-      <div className="box-border flex flex-col gap-2 items-start px-0 py-4 relative shrink-0 w-full">
+      {/* Customize Features Section */}
+      <div className="box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 mb-4 h-6">
           <button
             onClick={() => setPreferencesOpen(!preferencesOpen)}
             className="flex items-center gap-2 flex-1 h-6"
           >
-            <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-            </svg>
-            <p className="font-semibold text-sm text-[#121313]">Preferences</p>
+            <p className="font-semibold text-sm text-[#121313]">Customize Features</p>
             {isPreferencesDirty && (
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
@@ -992,201 +965,28 @@ export default function ClearContractsProductSettings({ groupId }: ClearContract
           </button>
         </div>
         {preferencesOpen && (
-          <div className="flex flex-col gap-8 items-start relative shrink-0 w-full">
-            {/* Notifications & Communication */}
-            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                  Notifications & Communication
-                </p>
-                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
-                  Controls for user notifications, emails, and approvals
-                </p>
+          <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
+            {[
+              { label: 'AskTQ Contract', value: askTqContract, setter: setAskTqContract },
+              { label: 'AskTQ Payer Policy', value: askTqPayerPolicy, setter: setAskTqPayerPolicy },
+              { label: 'Document Viewer', value: documentViewer, setter: setDocumentViewer },
+              { label: 'Rate Summary', value: rateSummary, setter: setRateSummary },
+              { label: 'Scenario Modeling', value: scenarioModeling, setter: setScenarioModeling },
+            ].map((toggle) => (
+              <div key={toggle.label} className="flex items-center justify-between w-full gap-4">
+                <p className="font-normal leading-4 text-xs text-[#121313] tracking-[0.12px] pl-4 flex-1">{toggle.label}</p>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={toggle.value}
+                    onChange={(e) => toggle.setter(e.target.checked)}
+                  />
+                  <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:bg-[#16696d] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                </label>
               </div>
-              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setNotifyOnDocUpload(!notifyOnDocUpload)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      notifyOnDocUpload
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {notifyOnDocUpload && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Enable notification on doc upload
-                  </p>
-                </div>
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setEnableRenewalEmails(!enableRenewalEmails)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      enableRenewalEmails
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {enableRenewalEmails && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Enable renewal emails
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Organization & Display */}
-            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                  Organization & Display
-                </p>
-                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
-                  UI and grouping behavior within the Clear Contracts product
-                </p>
-              </div>
-              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setEnableFolderView(!enableFolderView)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      enableFolderView
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {enableFolderView && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Enable folder view
-                  </p>
-                </div>
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setRateSummaryCustomer(!rateSummaryCustomer)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      rateSummaryCustomer
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {rateSummaryCustomer && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Rate summary customer
-                  </p>
-                </div>
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setEnableDocumentHierarchy(!enableDocumentHierarchy)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      enableDocumentHierarchy
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {enableDocumentHierarchy && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Enable document hierarchy
-                  </p>
-                </div>
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setEnableIntakeStatuses(!enableIntakeStatuses)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      enableIntakeStatuses
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {enableIntakeStatuses && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Enable intake statuses
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Contract Lifecycle */}
-            <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-              <div className="flex flex-col gap-1 items-start relative shrink-0 w-full">
-                <p className="font-semibold leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                  Contract Lifecycle
-                </p>
-                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#6e8081] tracking-[0.12px]">
-                  Time-based features and automations
-                </p>
-              </div>
-              <div className="flex flex-col gap-4 items-start relative shrink-0 w-full">
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setEnableRenewalDates(!enableRenewalDates)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      enableRenewalDates
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {enableRenewalDates && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Enable renewal dates
-                  </p>
-                </div>
-                <div className="flex gap-2 items-center relative shrink-0 w-full">
-                  <button
-                    onClick={() => setRenewalsMs2(!renewalsMs2)}
-                    className={`w-4 h-4 rounded-[2px] border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                      renewalsMs2
-                        ? 'bg-[#16696d] border-[#16696d]'
-                        : 'bg-white border-[#d2d8dc] hover:bg-[#e8f2f4]'
-                    }`}
-                  >
-                    {renewalsMs2 && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                    Renewals MS2
-                  </p>
-                </div>
-            </div>
+            ))}
           </div>
-        </div>
         )}
       </div>
       
