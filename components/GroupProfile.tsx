@@ -8,7 +8,7 @@ import ShinyText from './ShinyText';
 import PRODUCT_LOGOS from './productLogos';
 import PhiAwarenessBanner from './PhiAwarenessBanner';
 import { usePhiBanner } from './PhiBannerContext';
-import { ANALYZE_PRODUCT_NAME } from '@/constants/products';
+import { ANALYZE_PRODUCT_NAME, MRF_SEARCH_PRODUCT_NAME } from '@/constants/products';
 import DataTable from './DataTable';
 
 interface GroupProfileProps {
@@ -20,7 +20,7 @@ const groups: { [key: string]: { name: string; description: string; members: num
   'product-managers': { name: 'Product Managers', description: 'Read-only access to the Emerald platform', members: 170, products: ['Clear Contracts', ANALYZE_PRODUCT_NAME], id: '92883745', org: 'CommonSpirit Health' },
 };
 
-const ALL_PRODUCTS = [ANALYZE_PRODUCT_NAME, 'Clear Contracts'];
+const ALL_PRODUCTS = ['Clear Contracts', ANALYZE_PRODUCT_NAME, MRF_SEARCH_PRODUCT_NAME];
 
 interface GroupMember {
   name: string;
@@ -453,6 +453,8 @@ export default function GroupProfile({ groupId }: GroupProfileProps) {
                   {products.map((product, index) => {
                 const productHref = product === ANALYZE_PRODUCT_NAME 
                   ? `/permissions/groups/${groupId}/analyze${from === 'member' && memberId ? `?from=member&memberId=${memberId}` : `?from=group`}`
+                  : product === MRF_SEARCH_PRODUCT_NAME
+                  ? `/permissions/groups/${groupId}/mrf-search${from === 'member' && memberId ? `?from=member&memberId=${memberId}` : `?from=group`}`
                   : product === 'Clear Contracts'
                   ? `/permissions/groups/${groupId}/clear-contracts${from === 'member' && memberId ? `?from=member&memberId=${memberId}` : `?from=group`}`
                   : undefined;

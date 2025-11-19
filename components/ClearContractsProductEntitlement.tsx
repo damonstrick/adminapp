@@ -83,10 +83,9 @@ export default function ClearContractsProductEntitlement() {
   const [enableRenewalDates, setEnableRenewalDates] = useState(initialPreferences.enableRenewalDates);
   const [renewalsMs2, setRenewalsMs2] = useState(initialPreferences.renewalsMs2);
   
-  // Track which sections just saved
-  const [savedSection, setSavedSection] = useState<string | null>(null);
-  const [savedSectionsFromAll, setSavedSectionsFromAll] = useState<string[]>([]);
-  const [fadingOut, setFadingOut] = useState<string | null>(null);
+  // Track if saved
+  const [isSaved, setIsSaved] = useState(false);
+  const [fadingOut, setFadingOut] = useState(false);
   
   // Individual feature dirty states
   const isAskTqContractDirty = askTqContract !== initialFeatures.askTqContract;
@@ -147,52 +146,22 @@ export default function ClearContractsProductEntitlement() {
       rateSummary,
       scenarioModeling,
     });
-    setSavedSection('features');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('features');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
   const handleSaveAskTqContract = () => {
     setInitialFeatures(prev => ({ ...prev, askTqContract }));
-    setSavedSection('askTqContract');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('askTqContract');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
   const handleSaveAskTqPayerPolicy = () => {
     setInitialFeatures(prev => ({ ...prev, askTqPayerPolicy }));
-    setSavedSection('askTqPayerPolicy');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('askTqPayerPolicy');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
   const handleSaveRateSummary = () => {
     setInitialFeatures(prev => ({ ...prev, rateSummary }));
-    setSavedSection('rateSummary');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('rateSummary');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
   const handleSaveScenarioModeling = () => {
     setInitialFeatures(prev => ({ ...prev, scenarioModeling }));
-    setSavedSection('scenarioModeling');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('scenarioModeling');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
   const handleSaveSeatConfig = () => {
@@ -204,12 +173,6 @@ export default function ClearContractsProductEntitlement() {
       seatMode,
       numberOfSeats,
     });
-    setSavedSection('seatConfig');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('seatConfig');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
   const handleSaveRateLimit = () => {
@@ -219,12 +182,6 @@ export default function ClearContractsProductEntitlement() {
     console.log('Saving rate limit:', {
       medicareApiRateLimit,
     });
-    setSavedSection('rateLimit');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('rateLimit');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
   const handleSaveProcesses = () => {
@@ -248,12 +205,6 @@ export default function ClearContractsProductEntitlement() {
       aiContext,
       customTagTemplatesOnly,
     });
-    setSavedSection('processes');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('processes');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
   const handleSavePreferences = () => {
@@ -275,26 +226,12 @@ export default function ClearContractsProductEntitlement() {
       enableRenewalDates,
       renewalsMs2,
     });
-    setSavedSection('preferences');
-    setFadingOut(null);
-    setTimeout(() => {
-      setFadingOut('preferences');
-      setTimeout(() => setSavedSection(null), 300);
-    }, 1700);
   };
   
+  // Check if any section is dirty
+  const hasDirtySections = dirtySectionsCount > 0;
+  
   const handleSaveAll = () => {
-    // Track which sections were dirty before saving
-    const sectionsToSave: string[] = [];
-    if (isAskTqContractDirty) sectionsToSave.push('askTqContract');
-    if (isAskTqPayerPolicyDirty) sectionsToSave.push('askTqPayerPolicy');
-    if (isRateSummaryDirty) sectionsToSave.push('rateSummary');
-    if (isScenarioModelingDirty) sectionsToSave.push('scenarioModeling');
-    if (isSeatConfigDirty) sectionsToSave.push('seatConfig');
-    if (isRateLimitDirty) sectionsToSave.push('rateLimit');
-    if (isProcessesDirty) sectionsToSave.push('processes');
-    if (isPreferencesDirty) sectionsToSave.push('preferences');
-    
     // Save individual features
     if (isAskTqContractDirty) handleSaveAskTqContract();
     if (isAskTqPayerPolicyDirty) handleSaveAskTqPayerPolicy();
@@ -305,15 +242,11 @@ export default function ClearContractsProductEntitlement() {
     handleSaveProcesses();
     handleSavePreferences();
     
-    setSavedSection('all');
-    setSavedSectionsFromAll(sectionsToSave);
-    setFadingOut(null);
+    setIsSaved(true);
+    setFadingOut(false);
     setTimeout(() => {
-      setFadingOut('all');
-      setTimeout(() => {
-        setSavedSection(null);
-        setSavedSectionsFromAll([]);
-      }, 300);
+      setFadingOut(true);
+      setTimeout(() => setIsSaved(false), 300);
     }, 1700);
   };
 
@@ -345,6 +278,21 @@ export default function ClearContractsProductEntitlement() {
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              {hasDirtySections && !isSaved && (
+                <button
+                  onClick={handleSaveAll}
+                  className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+                >
+                  Save
+                </button>
+              )}
+              {isSaved && (
+                <div className={`text-xs font-medium transition-opacity duration-300 ${fadingOut ? 'opacity-0' : 'opacity-100'}`}>
+                  <ShinyText text="Saved" speed={3} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -359,24 +307,6 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isAskTqContractDirty && savedSection !== 'askTqContract' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveAskTqContract();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'askTqContract' || (savedSection === 'all' && savedSectionsFromAll.includes('askTqContract'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'askTqContract' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={askTqContract} onChange={(e) => setAskTqContract(e.target.checked)} />
             <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
@@ -391,24 +321,6 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isAskTqPayerPolicyDirty && savedSection !== 'askTqPayerPolicy' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveAskTqPayerPolicy();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'askTqPayerPolicy' || (savedSection === 'all' && savedSectionsFromAll.includes('askTqPayerPolicy'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'askTqPayerPolicy' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={askTqPayerPolicy} onChange={(e) => setAskTqPayerPolicy(e.target.checked)} />
             <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
@@ -423,24 +335,6 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isRateSummaryDirty && savedSection !== 'rateSummary' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveRateSummary();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'rateSummary' || (savedSection === 'all' && savedSectionsFromAll.includes('rateSummary'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'rateSummary' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={rateSummary} onChange={(e) => setRateSummary(e.target.checked)} />
             <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
@@ -455,24 +349,6 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isScenarioModelingDirty && savedSection !== 'scenarioModeling' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveScenarioModeling();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'scenarioModeling' || (savedSection === 'all' && savedSectionsFromAll.includes('scenarioModeling'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'scenarioModeling' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
           <label className="relative inline-flex items-center cursor-pointer h-6">
             <input type="checkbox" className="sr-only peer" checked={scenarioModeling} onChange={(e) => setScenarioModeling(e.target.checked)} />
             <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
@@ -492,24 +368,6 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isSeatConfigDirty && savedSection !== 'seatConfig' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveSeatConfig();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'seatConfig' || (savedSection === 'all' && savedSectionsFromAll.includes('seatConfig'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'seatConfig' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
           <button
             onClick={() => setSeatConfigOpen(!seatConfigOpen)}
             className="flex items-center h-6"
@@ -580,24 +438,6 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isRateLimitDirty && savedSection !== 'rateLimit' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveRateLimit();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'rateLimit' || (savedSection === 'all' && savedSectionsFromAll.includes('rateLimit'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'rateLimit' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
           <button
             onClick={() => setRateLimitOpen(!rateLimitOpen)}
             className="flex items-center h-6"
@@ -638,24 +478,6 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isProcessesDirty && savedSection !== 'processes' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSaveProcesses();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'processes' || (savedSection === 'all' && savedSectionsFromAll.includes('processes'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'processes' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
           <button
             onClick={() => setProcessesOpen(!processesOpen)}
             className="flex items-center h-6"
@@ -759,24 +581,6 @@ export default function ClearContractsProductEntitlement() {
               <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
             )}
           </button>
-          <div className="w-[60px] h-6 flex items-center justify-center">
-            {isPreferencesDirty && savedSection !== 'preferences' && savedSection !== 'all' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSavePreferences();
-                }}
-                className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
-              >
-                Save
-              </button>
-            )}
-            {(savedSection === 'preferences' || (savedSection === 'all' && savedSectionsFromAll.includes('preferences'))) && (
-              <div className={`text-xs font-medium transition-opacity duration-300 ${(fadingOut === 'preferences' || fadingOut === 'all') ? 'opacity-0' : 'opacity-100'}`}>
-                <ShinyText text="Saved" speed={3} />
-              </div>
-            )}
-          </div>
           <button
             onClick={() => setPreferencesOpen(!preferencesOpen)}
             className="flex items-center h-6"

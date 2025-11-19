@@ -12,7 +12,8 @@ interface ProductItem {
 
 const products: ProductItem[] = [
   { icon: 'pen-line', title: 'Clear Contracts', activeMembers: 142, groups: 2, configureHref: '/permissions/products/clear-contracts' },
-  { icon: 'chart-pie', title: 'Analyze + Search', activeMembers: 142, groups: 2, configureHref: '/permissions/products/analyze' },
+  { icon: 'chart-pie', title: 'Analyze', activeMembers: 142, groups: 2, configureHref: '/permissions/products/analyze' },
+  { icon: 'search', title: 'MRF Search', activeMembers: 142, groups: 2, configureHref: '/permissions/products/mrf-search' },
   { icon: 'database', title: 'Direct Data Access', activeMembers: 142, groups: 2, configureHref: '/permissions/products/direct-data-access' },
 ];
 
@@ -93,6 +94,12 @@ function getIcon(icon: string) {
       return (
         <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+      );
+    case 'search':
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       );
     default:

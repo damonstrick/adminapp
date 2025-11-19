@@ -1,16 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import ShinyText from './ShinyText';
-import PhiAwarenessBanner from './PhiAwarenessBanner';
-import { usePhiBanner } from './PhiBannerContext';
-import { ANALYZE_PRODUCT_NAME } from '@/constants/products';
-
-interface AnalyzeProductSettingsProps {
-  groupId: string;
-}
 
 type ScopeType = 'State' | 'Billing Code' | 'CBSA' | 'NPI';
 
@@ -27,110 +19,41 @@ interface Condition {
 
 const SCOPE_TYPES: ScopeType[] = ['State', 'Billing Code', 'CBSA', 'NPI'];
 
-type RoleOption = 'Viewer' | 'Editor' | 'Admin';
-
-const ROLE_OPTIONS: RoleOption[] = ['Viewer', 'Editor', 'Admin'];
-
-const ANALYZE_ROLE_PERMISSIONS: Record<RoleOption, string[]> = {
-  Viewer: [
-    'Can View Rate Analytics',
-    'Can See The Product Roadmap',
-    'Can View Payer Parsing Ingestion State',
-  ],
-  Editor: [
-    'Can View Payer Parsing Ingestion State',
-    'Can Add Rate Analytics',
-    'Can Change Rate Analytics',
-    'Can View Rate Analytics',
-    'Can See The Product Roadmap',
-  ],
-  Admin: [
-    'Can Manage Rate Analytics',
-    'Can Publish Rate Analytics',
-    'Can View Payer Parsing Ingestion State',
-    'Can See The Product Roadmap',
-  ],
-};
-
-const SEARCH_ROLE_PERMISSIONS: Record<RoleOption, string[]> = {
-  Viewer: [
-    'Can See Medicare Reference Pricing Rates',
-    'Can Use All Filters',
-    'Can Use Raw Charge Enterprise Tool',
-    'Can View Payer Parsing Ingestion Status',
-    'Can See The Care Search',
-  ],
-  Editor: [
-    'Can See Medicare Reference Pricing Rates',
-    'Can Use All Filters',
-    'Can Use Raw Charge Enterprise Tool',
-    'Can View Payer Parsing Ingestion Status',
-    'Can See The Care Search',
-    'Can Export Search Results',
-  ],
-  Admin: [
-    'Can Manage Search Permissions',
-    'Can Configure Filters',
-    'Can View Payer Parsing Ingestion Status',
-    'Can See Medicare Reference Pricing Rates',
-    'Can Use The Care Search',
-  ],
-};
-
-export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettingsProps) {
-  const { showPhiBanner } = usePhiBanner();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const from = searchParams.get('from');
-  const memberId = searchParams.get('memberId');
+export default function MRFSearchProductEntitlement() {
+  const [dataConfigOpen, setDataConfigOpen] = useState(true);
+  
+  // Customize Features section state
+  const [initialFeatures, setInitialFeatures] = useState({
+    exportData: false,
+    exportRateLimit: '',
+  });
+  
+  const [exportData, setExportData] = useState(initialFeatures.exportData);
+  const [exportRateLimit, setExportRateLimit] = useState(initialFeatures.exportRateLimit);
   
   // Track if saved
   const [isSaved, setIsSaved] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   
-  // Determine back URL based on context
-  const backUrl = from === 'member' && memberId 
-    ? `/permissions/members/${memberId}`
-    : `/permissions/groups/${groupId}`;
-  
-  const breadcrumbLabel = from === 'member' && memberId ? 'Members' : 'Groups';
-  const breadcrumbHref = from === 'member' && memberId 
-    ? `/permissions/members/${memberId}`
-    : `/permissions/groups/${groupId}`;
-
-  const handleRevokeAccess = () => {
-    const encodedName = encodeURIComponent(ANALYZE_PRODUCT_NAME);
-    const revokedUrl = from === 'member' && memberId
-      ? `/permissions/members/${memberId}?revoked=${encodedName}`
-      : `/permissions/groups/${groupId}?revoked=${encodedName}`;
-    router.push(revokedUrl);
-  };
-
-  // Initial/clean state
-  const [initialRolesPermissions, setInitialRolesPermissions] = useState({
-    analyzeRole: 'Editor' as RoleOption,
-  });
-  
-  // Current state
-  const [analyzeRole, setAnalyzeRole] = useState<RoleOption>(initialRolesPermissions.analyzeRole);
-  const [rolesPermissionsOpen, setRolesPermissionsOpen] = useState(true);
-  
-  // Dirty state tracking
-  const isRolesPermissionsDirty = analyzeRole !== initialRolesPermissions.analyzeRole;
+  // Customize Features section dirty state
+  const isFeaturesDirty = JSON.stringify({
+    exportData,
+    exportRateLimit,
+  }) !== JSON.stringify(initialFeatures);
   
   // Check if any section is dirty
-  const hasDirtySections = isRolesPermissionsDirty;
-  
-  const handleSaveRolesPermissions = () => {
-    setInitialRolesPermissions({
-      analyzeRole,
-    });
-    console.log('Saving roles & permissions:', { analyzeRole });
-  };
+  const hasDirtySections = isFeaturesDirty;
   
   const handleSaveAll = () => {
-    if (isRolesPermissionsDirty) {
-      handleSaveRolesPermissions();
+    if (isFeaturesDirty) {
+      setInitialFeatures({
+        exportData,
+        exportRateLimit,
+      });
+      console.log('Saving Customize Features section:', {
+        exportData,
+        exportRateLimit,
+      });
     }
     setIsSaved(true);
     setFadingOut(false);
@@ -140,41 +63,12 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     }, 1700);
   };
 
-  const renderRoleSection = (
-    label: string,
-    role: RoleOption,
-    onSelect: (role: RoleOption) => void,
-    permissionMap: Record<RoleOption, string[]>,
-    withDivider = false
-  ) => (
-    <div className={`w-full flex flex-col gap-4 ${withDivider ? 'border-b border-dashed border-[#e3e7ea] pb-6' : ''}`}>
-      <div className="flex gap-2 items-center w-full">
-        {ROLE_OPTIONS.map((option) => (
-          <button
-            key={option}
-            onClick={() => onSelect(option)}
-            className={`flex-1 h-8 px-3 py-2 rounded text-xs font-medium transition-colors ${
-              role === option ? 'bg-[#16696d] text-white' : 'bg-white border border-[#e3e7ea] text-[#121313] hover:bg-[#f0f2f2]'
-            }`}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-      <div className="flex flex-col gap-2 items-start">
-        <p className="text-xs text-[#6e8081]">
-          As a <span className="underline">{role}</span>, this member can:
-        </p>
-        <div className="flex flex-wrap gap-2 items-start w-full">
-          {permissionMap[role].map((permission) => (
-            <div key={`${label}-${role}-${permission}`} className="bg-[#f0f2f2] px-2 py-0.5 rounded text-[#121313] text-xs font-medium">
-              {permission}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  // Initialize with empty state
+  const [conditions, setConditions] = useState<Condition[]>([]);
+
+  // Hospital Rates and Payer Rates start empty
+  const [hospitalRatesConditions, setHospitalRatesConditions] = useState<Condition[]>([]);
+  const [payerRatesConditions, setPayerRatesConditions] = useState<Condition[]>([]);
 
   // Popover states
   const [addScopePopover, setAddScopePopover] = useState<{ conditionId: string | null; section: 'clear' | 'hospital' | 'payer'; open: boolean } | null>(null);
@@ -218,19 +112,25 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   // Close popovers when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (addScopeRef.current && !addScopeRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      
+      if (addScopePopover?.open && addScopeRef.current && !addScopeRef.current.contains(target)) {
         setAddScopePopover(null);
         setScopeSearchValue('');
       }
-      if (addTagRef.current && !addTagRef.current.contains(event.target as Node)) {
+      if (addTagPopover?.open && addTagRef.current && !addTagRef.current.contains(target)) {
         setAddTagPopover(null);
         setTagSearchValue('');
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (addScopePopover?.open || addTagPopover?.open) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [addScopePopover, addTagPopover]);
 
   // Helper functions - generic versions that work with any section
   const getConditions = (section: 'clear' | 'hospital' | 'payer'): Condition[] => {
@@ -458,184 +358,6 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     }).filter(Boolean) as Condition[]);
   };
 
-  const payerOptions = [
-    'AL HMO',
-    'AZ PPO',
-    'Blue Choice',
-    'Gold Network',
-    'Silver Network',
-    'Platinum Network',
-    'Basic Network',
-    'Premium Network',
-    'Standard Network',
-    'Elite Network',
-  ];
-
-  const providerOptions = [
-    'L37829',
-    'L26734',
-    'S27783',
-    'S27784',
-    'L37830',
-    'L26735',
-    'S27785',
-    'L37831',
-    'L26736',
-    'S27786',
-  ];
-
-  const getFilteredPayers = (search: string) => {
-    if (!search.trim()) return payerOptions;
-    return payerOptions.filter((p) => p.toLowerCase().includes(search.toLowerCase()));
-  };
-
-  const getFilteredProviders = (search: string) => {
-    if (!search.trim()) return providerOptions;
-    return providerOptions.filter((p) => p.toLowerCase().includes(search.toLowerCase()));
-  };
-
-  const addPayer = (payer: string) => {
-    if (!topPayers.includes(payer)) {
-      setTopPayers([...topPayers, payer]);
-    }
-    setPayerPopoverOpen(false);
-    setPayerSearchValue('');
-  };
-
-  const removePayer = (payer: string) => {
-    setTopPayers(topPayers.filter((p) => p !== payer));
-  };
-
-  const addProvider = (provider: string) => {
-    if (!topProviders.includes(provider)) {
-      setTopProviders([...topProviders, provider]);
-    }
-    setProviderPopoverOpen(false);
-    setProviderSearchValue('');
-  };
-
-  const removeProvider = (provider: string) => {
-    setTopProviders(topProviders.filter((p) => p !== provider));
-  };
-
-  useEffect(() => {
-    const handleClick = (event: MouseEvent) => {
-      if (
-        payerPopoverRef.current &&
-        !payerPopoverRef.current.contains(event.target as Node) &&
-        payerButtonRef.current &&
-        !payerButtonRef.current.contains(event.target as Node)
-      ) {
-        setPayerPopoverOpen(false);
-        setPayerSearchValue('');
-      }
-      if (
-        providerPopoverRef.current &&
-        !providerPopoverRef.current.contains(event.target as Node) &&
-        providerButtonRef.current &&
-        !providerButtonRef.current.contains(event.target as Node)
-      ) {
-        setProviderPopoverOpen(false);
-        setProviderSearchValue('');
-      }
-    };
-
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  // Generate AI summary from scope data with AND/OR relationships
-  const generateScopeSummary = (): string => {
-    const entityName = from === 'member' && memberId ? 'John Smith' : 'this group';
-    const pronoun = from === 'member' && memberId ? 'He' : 'It';
-    
-    // Helper to describe a section's conditions
-    const describeSection = (sectionConditions: Condition[], sectionName: string): string | null => {
-      if (sectionConditions.length === 0 || sectionConditions.every(c => c.scopes.every(s => s.tags.length === 0))) {
-        return null;
-      }
-
-      const hasMultipleConditions = sectionConditions.length > 1;
-      
-      // Build descriptions for each condition
-      const conditionDescriptions: string[] = [];
-      
-      sectionConditions.forEach((condition, conditionIndex) => {
-        const scopesWithTags = condition.scopes.filter(s => s.tags.length > 0);
-        if (scopesWithTags.length === 0) return;
-        
-        const scopeParts: string[] = [];
-        
-        scopesWithTags.forEach((scope, scopeIndex) => {
-          const tags = scope.tags;
-          if (tags.length === 0) return;
-          
-          let tagList = '';
-          if (tags.length <= 3) {
-            tagList = tags.join(', ');
-          } else {
-            tagList = `${tags.slice(0, 3).join(', ')}, and ${tags.length - 3} more`;
-          }
-          
-          scopeParts.push(`${scope.type} (${tagList})`);
-        });
-        
-        if (scopeParts.length > 0) {
-          // Within a condition, scopes are ANDed
-          if (scopeParts.length === 1) {
-            conditionDescriptions.push(scopeParts[0]);
-          } else {
-            conditionDescriptions.push(scopeParts.join(' AND '));
-          }
-        }
-      });
-      
-      if (conditionDescriptions.length === 0) return null;
-      
-      // Build the section description
-      let sectionDesc = '';
-      if (conditionDescriptions.length === 1) {
-        // Single condition: all ANDed
-        sectionDesc = `${sectionName}: ${conditionDescriptions[0]}`;
-      } else {
-        // Multiple conditions: ORed together
-        sectionDesc = `${sectionName}: ${conditionDescriptions.join(' OR ')}`;
-      }
-      
-      return sectionDesc;
-    };
-    
-    // Describe each section
-    const sectionDescriptions: string[] = [];
-    
-    const clearRatesDesc = describeSection(conditions, 'Clear Rates');
-    if (clearRatesDesc) sectionDescriptions.push(clearRatesDesc);
-    
-    const hospitalRatesDesc = describeSection(hospitalRatesConditions, 'Hospital Rates');
-    if (hospitalRatesDesc) sectionDescriptions.push(hospitalRatesDesc);
-    
-    const payerRatesDesc = describeSection(payerRatesConditions, 'Payer Rates');
-    if (payerRatesDesc) sectionDescriptions.push(payerRatesDesc);
-    
-    if (sectionDescriptions.length === 0) {
-      return 'No scope has been configured yet. Add scopes to define access rules.';
-    }
-    
-    // Build the final summary
-    let summary = `${entityName}'s current scope `;
-    
-    if (sectionDescriptions.length === 1) {
-      summary += `includes ${sectionDescriptions[0].toLowerCase()}`;
-    } else {
-      summary += `includes ${sectionDescriptions.join(', ')}`;
-    }
-    
-    summary += '.';
-    
-    // Capitalize the first letter
-    return summary.charAt(0).toUpperCase() + summary.slice(1);
-  };
-
   // Helper function to render a conditions section
   const renderConditionsSection = (section: 'clear' | 'hospital' | 'payer', sectionTitle: string) => {
     const sectionConditions = getConditions(section);
@@ -769,12 +491,12 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
                                 ref={addTagRef}
                                 className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-[#e3e7ea] rounded-lg shadow-[0px_4px_16px_0px_rgba(0,0,0,0.16)] p-2 z-50 min-w-[224px]"
                               >
-                              {/* Search Box */}
-                              <div className="border-b border-[#e3e7ea] border-solid pb-3 mb-0">
-                                <div className="bg-[#f7f8f8] border border-[#e3e7ea] border-solid rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
-                                  <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                  </svg>
+                                {/* Search Box */}
+                                <div className="border-b border-[#e3e7ea] border-solid pb-3 mb-0">
+                                  <div className="bg-[#f7f8f8] border border-[#e3e7ea] border-solid rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
+                                    <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
                                     <input
                                       type="text"
                                       value={tagSearchValue}
@@ -806,39 +528,39 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
                                       className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
                                       autoFocus
                                     />
+                                  </div>
                                 </div>
-                              </div>
-                              
-                              {/* Options List */}
-                              <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
-                                {getFilteredOptions(scope.type, tagSearchValue)
-                                  .filter(option => {
-                                    // Filter out already added tags (case-insensitive)
+                                
+                                {/* Options List */}
+                                <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
+                                  {getFilteredOptions(scope.type, tagSearchValue)
+                                    .filter(option => {
+                                      // Filter out already added tags (case-insensitive)
+                                      const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+                                      return !existingTagsLower.includes(option.toLowerCase());
+                                    })
+                                    .map((option, index) => (
+                                    <button
+                                      key={option}
+                                      onClick={() => addTag(section, condition.id, scope.id, option)}
+                                      className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
+                                    >
+                                      <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                                        {option}
+                                      </p>
+                                    </button>
+                                  ))}
+                                  {getFilteredOptions(scope.type, tagSearchValue).filter(option => {
                                     const existingTagsLower = scope.tags.map(t => t.toLowerCase());
                                     return !existingTagsLower.includes(option.toLowerCase());
-                                  })
-                                  .map((option, index) => (
-                                  <button
-                                    key={option}
-                                    onClick={() => addTag(section, condition.id, scope.id, option)}
-                                    className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
-                                  >
-                                    <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
-                                      {option}
-                                    </p>
-                                  </button>
-                                ))}
-                                {getFilteredOptions(scope.type, tagSearchValue).filter(option => {
-                                  const existingTagsLower = scope.tags.map(t => t.toLowerCase());
-                                  return !existingTagsLower.includes(option.toLowerCase());
-                                }).length === 0 && (
-                                  <div className="w-full p-2 text-center">
-                                    <p className="font-normal text-xs text-[#6e8081]">No options found</p>
-                                  </div>
-                                )}
+                                  }).length === 0 && (
+                                    <div className="w-full p-2 text-center">
+                                      <p className="font-normal text-xs text-[#6e8081]">No options found</p>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
                           </div>
                         </div>
                       </div>
@@ -962,33 +684,31 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     );
   };
 
-
   return (
-    <>
-      <div className="bg-white flex flex-col items-start relative rounded-lg w-full">
+    <div className="bg-white flex flex-col items-start relative rounded-lg w-full">
       {/* Header */}
       <div className="border-b border-[#e3e7ea] border-solid box-border flex gap-1 items-start pb-6 pt-4 px-0 relative shrink-0 w-full">
         <div className="basis-0 flex flex-col gap-6 grow items-start min-h-px min-w-px relative shrink-0">
           {/* Breadcrumbs */}
           <div className="flex gap-1 items-center text-xs text-[#6e8081] relative shrink-0">
-            <Link href={breadcrumbHref} className="hover:underline">
-              {breadcrumbLabel}
+            <Link href="/permissions/products" className="hover:underline">
+              Products & Features
             </Link>
             <span>/</span>
-            <span className="text-[#121313]">{ANALYZE_PRODUCT_NAME}</span>
+            <span className="text-[#121313]">MRF Search</span>
           </div>
 
           {/* Header with back button and title */}
           <div className="flex items-center justify-between relative shrink-0 w-full">
             <div className="basis-0 flex gap-1 grow items-center min-h-px min-w-px relative shrink-0">
-              <Link href={backUrl} className="flex items-center justify-center w-8 h-8 rounded hover:bg-[#f0f2f2] shrink-0">
+              <Link href="/permissions/products" className="flex items-center justify-center w-8 h-8 rounded hover:bg-[#f0f2f2] shrink-0">
                 <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div className="flex flex-col gap-1 items-start not-italic relative shrink-0">
                 <p className="font-semibold leading-6 relative shrink-0 text-[#121313] text-base tracking-[0.16px]">
-                  {ANALYZE_PRODUCT_NAME}
+                  MRF Search
                 </p>
               </div>
             </div>
@@ -1006,58 +726,62 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
                   <ShinyText text="Saved" speed={3} />
                 </div>
               )}
-              <button 
-                onClick={handleRevokeAccess}
-                className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 cursor-pointer"
-              >
-                Revoke Access
-              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* PHI Awareness Banner */}
-      {showPhiBanner && (
-        <div className="px-0 pb-4 pt-0 w-full">
-          <PhiAwarenessBanner />
+      {/* Customize Features Section */}
+      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pb-[24px] relative shrink-0 w-full">
+        <div className="w-full flex items-center gap-2 pt-[24px] mb-4">
+          <p className="font-semibold text-sm text-[#121313]">Customize Features</p>
+          {isFeaturesDirty && (
+            <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
+          )}
         </div>
-      )}
-      
-      {/* Roles & Permissions Section */}
-      <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pt-4 pb-[24px] relative shrink-0 w-full">
-        <div className="w-full flex items-center gap-2 mb-4 h-6">
-          <button
-            onClick={() => setRolesPermissionsOpen(!rolesPermissionsOpen)}
-            className="flex items-center gap-2 flex-1 h-6"
-          >
-            <p className="font-semibold text-sm text-[#121313]">Roles & Permissions</p>
-            {isRolesPermissionsDirty && (
-              <div className="w-2 h-2 bg-[#16696d] rounded-full ml-1"></div>
-            )}
-          </button>
-          <button
-            onClick={() => setRolesPermissionsOpen(!rolesPermissionsOpen)}
-            className="flex items-center h-6"
-          >
-            <svg
-              className={`w-5 h-5 text-[#121313] transition-transform ${rolesPermissionsOpen ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+        <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4">
+          {/* Export Data */}
+          <div className="flex items-center justify-between relative shrink-0 w-full">
+            <p className="font-medium text-xs text-[#121313]">Export Data</p>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" checked={exportData} onChange={(e) => setExportData(e.target.checked)} />
+              <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+            </label>
+          </div>
+          
+          {/* Export Rate Limit */}
+          <div className="flex items-center justify-between relative shrink-0 w-full">
+            <p className="font-medium text-xs text-[#121313]">Export Rate Limit</p>
+            <input
+              type="text"
+              value={exportRateLimit}
+              onChange={(e) => setExportRateLimit(e.target.value)}
+              placeholder="10"
+              className="bg-white border border-[#e3e7ea] rounded w-20 px-3 py-2 text-xs text-[#121313] focus:outline-none focus:ring-2 focus:ring-[#16696d]"
+            />
+          </div>
         </div>
-        {rolesPermissionsOpen && (
+      </div>
+
+      {/* Data Configuration Section */}
+      <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-4 relative shrink-0 w-full">
+        <div className="w-full flex flex-col gap-2 mb-4">
+          <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
+          <p className="text-xs text-[#6e8081] leading-4">
+            This will apply to both the Analyze and MRF Search products
+          </p>
+        </div>
+        {dataConfigOpen && (
           <div className="flex flex-col gap-6 items-start relative shrink-0 w-full">
-            {renderRoleSection('Analyze', analyzeRole, setAnalyzeRole, ANALYZE_ROLE_PERMISSIONS)}
+            {/* Hospital & Payer Rates */}
+            {renderConditionsSection('hospital', 'Hospital & Payer Rates')}
+
+            {/* Procedure Rates */}
+            {renderConditionsSection('payer', 'Procedure Rates')}
           </div>
         )}
       </div>
-      </div>
-      
-    </>
+    </div>
   );
 }
+

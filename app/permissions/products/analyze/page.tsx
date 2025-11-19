@@ -1,9 +1,9 @@
-import ProductEntitlement from '@/components/ProductEntitlement';
+import AnalyzeProductEntitlement from '@/components/AnalyzeProductEntitlement';
 
-export default function ProductEntitlementPage() {
+export default function AnalyzeProductEntitlementPage() {
   return (
     <div className="w-full">
-      <ProductEntitlement />
+      <AnalyzeProductEntitlement />
     </div>
   );
 }

@@ -17,9 +17,9 @@ export default function DirectDataAccessProductEntitlement() {
   const [payerData, setPayerData] = useState(initialDataAccess.payerData);
   const [visibleToUser, setVisibleToUser] = useState(initialDataAccess.visibleToUser);
   
-  // Track which sections just saved
-  const [savedSection, setSavedSection] = useState<string | null>(null);
-  const [fadingOut, setFadingOut] = useState<string | null>(null);
+  // Track if saved
+  const [isSaved, setIsSaved] = useState(false);
+  const [fadingOut, setFadingOut] = useState(false);
   
   // Data Access section dirty state
   const isDataAccessDirty = JSON.stringify({
@@ -28,22 +28,27 @@ export default function DirectDataAccessProductEntitlement() {
     visibleToUser,
   }) !== JSON.stringify(initialDataAccess);
   
-  const handleSaveDataAccess = () => {
-    setInitialDataAccess({
-      hospitalData,
-      payerData,
-      visibleToUser,
-    });
-    console.log('Saving data access section:', {
-      hospitalData,
-      payerData,
-      visibleToUser,
-    });
-    setSavedSection('dataAccess');
-    setFadingOut(null);
+  // Check if any section is dirty
+  const hasDirtySections = isDataAccessDirty;
+  
+  const handleSaveAll = () => {
+    if (isDataAccessDirty) {
+      setInitialDataAccess({
+        hospitalData,
+        payerData,
+        visibleToUser,
+      });
+      console.log('Saving data access section:', {
+        hospitalData,
+        payerData,
+        visibleToUser,
+      });
+    }
+    setIsSaved(true);
+    setFadingOut(false);
     setTimeout(() => {
-      setFadingOut('dataAccess');
-      setTimeout(() => setSavedSection(null), 300);
+      setFadingOut(true);
+      setTimeout(() => setIsSaved(false), 300);
     }, 1700);
   };
 
@@ -75,6 +80,21 @@ export default function DirectDataAccessProductEntitlement() {
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              {hasDirtySections && !isSaved && (
+                <button
+                  onClick={handleSaveAll}
+                  className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256] h-6"
+                >
+                  Save
+                </button>
+              )}
+              {isSaved && (
+                <div className={`text-xs font-medium transition-opacity duration-300 ${fadingOut ? 'opacity-0' : 'opacity-100'}`}>
+                  <ShinyText text="Saved" speed={3} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -84,27 +104,6 @@ export default function DirectDataAccessProductEntitlement() {
         <SectionHeader
           title="Data Access"
           showDirtyDot={isDataAccessDirty}
-          action={
-            <>
-              {isDataAccessDirty && savedSection !== 'dataAccess' && savedSection !== 'all' && (
-                <button
-                  onClick={handleSaveDataAccess}
-                  className="px-4 py-1 bg-[#16696d] text-white rounded-lg text-xs font-medium hover:bg-[#0d5256]"
-                >
-                  Save
-                </button>
-              )}
-              {(savedSection === 'dataAccess' || savedSection === 'all') && (
-                <div
-                  className={`text-xs font-medium transition-opacity duration-300 ${
-                    fadingOut === 'dataAccess' || fadingOut === 'all' ? 'opacity-0' : 'opacity-100'
-                  }`}
-                >
-                  <ShinyText text="Saved" speed={3} />
-                </div>
-              )}
-            </>
-          }
         />
         <div className="flex flex-col gap-6 items-start relative shrink-0 w-full pl-4 pt-0">
           {/* Hospital Data */}
