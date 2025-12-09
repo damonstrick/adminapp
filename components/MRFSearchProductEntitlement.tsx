@@ -20,7 +20,14 @@ interface Condition {
 const SCOPE_TYPES: ScopeType[] = ['State', 'Billing Code', 'CBSA', 'NPI'];
 
 export default function MRFSearchProductEntitlement() {
+  const [mrfSearchEnabled, setMrfSearchEnabled] = useState(false);
   const [dataConfigOpen, setDataConfigOpen] = useState(true);
+  
+  // Data Config subsection toggles
+  const [hospitalRatesOpen, setHospitalRatesOpen] = useState(false);
+  const [payerRatesOpen, setPayerRatesOpen] = useState(false);
+  const [deviceRatesOpen, setDeviceRatesOpen] = useState(false);
+  const [drugRatesOpen, setDrugRatesOpen] = useState(false);
   
   // Customize Features section state
   const [initialFeatures, setInitialFeatures] = useState({
@@ -69,10 +76,12 @@ export default function MRFSearchProductEntitlement() {
   // Hospital Rates and Payer Rates start empty
   const [hospitalRatesConditions, setHospitalRatesConditions] = useState<Condition[]>([]);
   const [payerRatesConditions, setPayerRatesConditions] = useState<Condition[]>([]);
+  const [deviceRatesConditions, setDeviceRatesConditions] = useState<Condition[]>([]);
+  const [drugRatesConditions, setDrugRatesConditions] = useState<Condition[]>([]);
 
   // Popover states
-  const [addScopePopover, setAddScopePopover] = useState<{ conditionId: string | null; section: 'clear' | 'hospital' | 'payer'; open: boolean } | null>(null);
-  const [addTagPopover, setAddTagPopover] = useState<{ conditionId: string; scopeId: string; section: 'clear' | 'hospital' | 'payer'; open: boolean } | null>(null);
+  const [addScopePopover, setAddScopePopover] = useState<{ conditionId: string | null; section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug'; open: boolean } | null>(null);
+  const [addTagPopover, setAddTagPopover] = useState<{ conditionId: string; scopeId: string; section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug'; open: boolean } | null>(null);
   const [tagSearchValue, setTagSearchValue] = useState('');
   const [scopeSearchValue, setScopeSearchValue] = useState('');
   const addScopeRef = useRef<HTMLDivElement>(null);
@@ -133,23 +142,29 @@ export default function MRFSearchProductEntitlement() {
   }, [addScopePopover, addTagPopover]);
 
   // Helper functions - generic versions that work with any section
-  const getConditions = (section: 'clear' | 'hospital' | 'payer'): Condition[] => {
+  const getConditions = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug'): Condition[] => {
     if (section === 'hospital') return hospitalRatesConditions;
     if (section === 'payer') return payerRatesConditions;
+    if (section === 'device') return deviceRatesConditions;
+    if (section === 'drug') return drugRatesConditions;
     return conditions;
   };
 
-  const setConditionsForSection = (section: 'clear' | 'hospital' | 'payer', newConditions: Condition[] | ((prev: Condition[]) => Condition[])) => {
+  const setConditionsForSection = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug', newConditions: Condition[] | ((prev: Condition[]) => Condition[])) => {
     if (section === 'hospital') {
       setHospitalRatesConditions(newConditions as React.SetStateAction<Condition[]>);
     } else if (section === 'payer') {
       setPayerRatesConditions(newConditions as React.SetStateAction<Condition[]>);
+    } else if (section === 'device') {
+      setDeviceRatesConditions(newConditions as React.SetStateAction<Condition[]>);
+    } else if (section === 'drug') {
+      setDrugRatesConditions(newConditions as React.SetStateAction<Condition[]>);
     } else {
       setConditions(newConditions as React.SetStateAction<Condition[]>);
     }
   };
 
-  const addCondition = (section: 'clear' | 'hospital' | 'payer') => {
+  const addCondition = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug') => {
     const newCondition: Condition = {
       id: Date.now().toString(),
       scopes: [],
@@ -158,7 +173,7 @@ export default function MRFSearchProductEntitlement() {
     setConditionsForSection(section, [...currentConditions, newCondition]);
   };
 
-  const addScope = (section: 'clear' | 'hospital' | 'payer', conditionId: string | null, scopeType: ScopeType) => {
+  const addScope = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug', conditionId: string | null, scopeType: ScopeType) => {
     const currentConditions = getConditions(section);
     
     // If conditionId is null, create a new condition with this scope
@@ -184,7 +199,7 @@ export default function MRFSearchProductEntitlement() {
     setScopeSearchValue('');
   };
 
-  const removeScope = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string) => {
+  const removeScope = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug', conditionId: string, scopeId: string) => {
     const currentConditions = getConditions(section);
     setConditionsForSection(section, currentConditions.map(condition => {
       if (condition.id === conditionId) {
@@ -230,7 +245,7 @@ export default function MRFSearchProductEntitlement() {
   };
 
   // Function to add multiple tags from comma-separated values
-  const addTagsFromCommaSeparated = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string, inputValue: string) => {
+  const addTagsFromCommaSeparated = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug', conditionId: string, scopeId: string, inputValue: string) => {
     const trimmedInput = inputValue.trim();
     if (!trimmedInput) return;
     
@@ -295,7 +310,7 @@ export default function MRFSearchProductEntitlement() {
     setAddTagPopover(null);
   };
 
-  const addTag = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string, tagValue: string) => {
+  const addTag = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug', conditionId: string, scopeId: string, tagValue: string) => {
     if (!tagValue.trim()) return;
     
     // Use findMatchingOption to get the correct case/formatted value
@@ -333,7 +348,7 @@ export default function MRFSearchProductEntitlement() {
     setAddTagPopover(null);
   };
 
-  const removeTag = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string, tagIndex: number) => {
+  const removeTag = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug', conditionId: string, scopeId: string, tagIndex: number) => {
     const currentConditions = getConditions(section);
     setConditionsForSection(section, currentConditions.map(condition => {
       if (condition.id === conditionId) {
@@ -359,17 +374,46 @@ export default function MRFSearchProductEntitlement() {
   };
 
   // Helper function to render a conditions section
-  const renderConditionsSection = (section: 'clear' | 'hospital' | 'payer', sectionTitle: string) => {
+  const renderConditionsSection = (section: 'clear' | 'hospital' | 'payer' | 'device' | 'drug', sectionTitle: string) => {
     const sectionConditions = getConditions(section);
     const isEmpty = sectionConditions.length === 0;
+    
+    // Get the toggle state based on section
+    const getSectionOpen = () => {
+      if (section === 'hospital') return hospitalRatesOpen;
+      if (section === 'payer') return payerRatesOpen;
+      if (section === 'device') return deviceRatesOpen;
+      if (section === 'drug') return drugRatesOpen;
+      return true;
+    };
+    
+    const setSectionOpen = (open: boolean) => {
+      if (section === 'hospital') setHospitalRatesOpen(open);
+      else if (section === 'payer') setPayerRatesOpen(open);
+      else if (section === 'device') setDeviceRatesOpen(open);
+      else if (section === 'drug') setDrugRatesOpen(open);
+    };
+    
+    const isSectionOpen = getSectionOpen();
 
     return (
       <div className="flex flex-col gap-3 items-start relative shrink-0 w-full">
-        <p className="font-semibold leading-4 relative shrink-0 text-[#121313] text-xs tracking-[0.12px]">
-          {sectionTitle}
-        </p>
+        <div className="flex items-center gap-2 w-full">
+          <p className="font-semibold leading-4 relative shrink-0 text-[#121313] text-xs tracking-[0.12px]">
+            {sectionTitle}
+          </p>
+          <label className="relative inline-flex items-center cursor-pointer h-6 ml-auto">
+            <input 
+              type="checkbox" 
+              className="sr-only peer" 
+              checked={isSectionOpen} 
+              onChange={(e) => setSectionOpen(e.target.checked)} 
+            />
+            <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+          </label>
+        </div>
         
-        {isEmpty ? (
+        {isSectionOpen && (isEmpty ? (
           // Empty state: just show "Add Scope" button
           <div className="border border-[#e3e7ea] border-solid rounded-lg flex flex-col items-start relative shrink-0 w-full">
             <div className="relative w-full flex justify-center">
@@ -679,7 +723,7 @@ export default function MRFSearchProductEntitlement() {
               </button>
             </div>
           </>
-        )}
+        ))}
       </div>
     );
   };
@@ -706,10 +750,19 @@ export default function MRFSearchProductEntitlement() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
-              <div className="flex flex-col gap-1 items-start not-italic relative shrink-0">
+              <div className="flex items-center gap-2 not-italic relative shrink-0">
                 <p className="font-semibold leading-6 relative shrink-0 text-[#121313] text-base tracking-[0.16px]">
                   MRF Search
                 </p>
+                <label className="relative inline-flex items-center cursor-pointer h-6">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={mrfSearchEnabled} 
+                    onChange={(e) => setMrfSearchEnabled(e.target.checked)} 
+                  />
+                  <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#16696d] relative"></div>
+                </label>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -732,6 +785,7 @@ export default function MRFSearchProductEntitlement() {
       </div>
 
       {/* Customize Features Section */}
+      {mrfSearchEnabled && (
       <div className="border-b border-[#e3e7ea] border-solid box-border flex flex-col gap-2 items-start px-0 pb-[24px] relative shrink-0 w-full">
         <div className="w-full flex items-center gap-2 pt-[24px] mb-4">
           <p className="font-semibold text-sm text-[#121313]">Customize Features</p>
@@ -762,8 +816,10 @@ export default function MRFSearchProductEntitlement() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Data Configuration Section */}
+      {mrfSearchEnabled && (
       <div className="box-border flex flex-col gap-2 items-start px-0 pt-[24px] pb-4 relative shrink-0 w-full">
         <div className="w-full flex flex-col gap-2 mb-4">
           <p className="font-semibold text-sm text-[#121313]">Data Configuration</p>
@@ -778,9 +834,16 @@ export default function MRFSearchProductEntitlement() {
 
             {/* Procedure Rates */}
             {renderConditionsSection('payer', 'Procedure Rates')}
+
+            {/* Device Rates */}
+            {renderConditionsSection('device', 'Device Rates')}
+
+            {/* Drug Rates */}
+            {renderConditionsSection('drug', 'Drug Rates')}
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }
