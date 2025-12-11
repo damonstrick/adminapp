@@ -114,6 +114,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   // Current state
   const [analyzeRole, setAnalyzeRole] = useState<RoleOption>(initialRolesPermissions.analyzeRole);
   const [rolesPermissionsOpen, setRolesPermissionsOpen] = useState(true);
+  const [conditions, setConditions] = useState<Condition[]>([]);
   
   // Dirty state tracking
   const isRolesPermissionsDirty = analyzeRole !== initialRolesPermissions.analyzeRole;
@@ -177,8 +178,8 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   );
 
   // Popover states
-  const [addScopePopover, setAddScopePopover] = useState<{ conditionId: string | null; section: 'clear' | 'hospital' | 'payer'; open: boolean } | null>(null);
-  const [addTagPopover, setAddTagPopover] = useState<{ conditionId: string; scopeId: string; section: 'clear' | 'hospital' | 'payer'; open: boolean } | null>(null);
+  const [addScopePopover, setAddScopePopover] = useState<{ conditionId: string | null; section: 'clear'; open: boolean } | null>(null);
+  const [addTagPopover, setAddTagPopover] = useState<{ conditionId: string; scopeId: string; section: 'clear'; open: boolean } | null>(null);
   const [tagSearchValue, setTagSearchValue] = useState('');
   const [scopeSearchValue, setScopeSearchValue] = useState('');
   const addScopeRef = useRef<HTMLDivElement>(null);
@@ -233,23 +234,15 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   }, []);
 
   // Helper functions - generic versions that work with any section
-  const getConditions = (section: 'clear' | 'hospital' | 'payer'): Condition[] => {
-    if (section === 'hospital') return hospitalRatesConditions;
-    if (section === 'payer') return payerRatesConditions;
+  const getConditions = (section: 'clear'): Condition[] => {
     return conditions;
   };
 
-  const setConditionsForSection = (section: 'clear' | 'hospital' | 'payer', newConditions: Condition[] | ((prev: Condition[]) => Condition[])) => {
-    if (section === 'hospital') {
-      setHospitalRatesConditions(newConditions as React.SetStateAction<Condition[]>);
-    } else if (section === 'payer') {
-      setPayerRatesConditions(newConditions as React.SetStateAction<Condition[]>);
-    } else {
-      setConditions(newConditions as React.SetStateAction<Condition[]>);
-    }
+  const setConditionsForSection = (section: 'clear', newConditions: Condition[] | ((prev: Condition[]) => Condition[])) => {
+    setConditions(newConditions as React.SetStateAction<Condition[]>);
   };
 
-  const addCondition = (section: 'clear' | 'hospital' | 'payer') => {
+  const addCondition = (section: 'clear') => {
     const newCondition: Condition = {
       id: Date.now().toString(),
       scopes: [],
@@ -258,7 +251,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     setConditionsForSection(section, [...currentConditions, newCondition]);
   };
 
-  const addScope = (section: 'clear' | 'hospital' | 'payer', conditionId: string | null, scopeType: ScopeType) => {
+  const addScope = (section: 'clear', conditionId: string | null, scopeType: ScopeType) => {
     const currentConditions = getConditions(section);
     
     // If conditionId is null, create a new condition with this scope
@@ -284,7 +277,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     setScopeSearchValue('');
   };
 
-  const removeScope = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string) => {
+  const removeScope = (section: 'clear', conditionId: string, scopeId: string) => {
     const currentConditions = getConditions(section);
     setConditionsForSection(section, currentConditions.map(condition => {
       if (condition.id === conditionId) {
@@ -330,7 +323,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   };
 
   // Function to add multiple tags from comma-separated values
-  const addTagsFromCommaSeparated = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string, inputValue: string) => {
+  const addTagsFromCommaSeparated = (section: 'clear', conditionId: string, scopeId: string, inputValue: string) => {
     const trimmedInput = inputValue.trim();
     if (!trimmedInput) return;
     
@@ -395,7 +388,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     setAddTagPopover(null);
   };
 
-  const addTag = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string, tagValue: string) => {
+  const addTag = (section: 'clear', conditionId: string, scopeId: string, tagValue: string) => {
     if (!tagValue.trim()) return;
     
     // Use findMatchingOption to get the correct case/formatted value
@@ -433,7 +426,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     setAddTagPopover(null);
   };
 
-  const removeTag = (section: 'clear' | 'hospital' | 'payer', conditionId: string, scopeId: string, tagIndex: number) => {
+  const removeTag = (section: 'clear', conditionId: string, scopeId: string, tagIndex: number) => {
     const currentConditions = getConditions(section);
     setConditionsForSection(section, currentConditions.map(condition => {
       if (condition.id === conditionId) {
@@ -458,91 +451,6 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     }).filter(Boolean) as Condition[]);
   };
 
-  const payerOptions = [
-    'AL HMO',
-    'AZ PPO',
-    'Blue Choice',
-    'Gold Network',
-    'Silver Network',
-    'Platinum Network',
-    'Basic Network',
-    'Premium Network',
-    'Standard Network',
-    'Elite Network',
-  ];
-
-  const providerOptions = [
-    'L37829',
-    'L26734',
-    'S27783',
-    'S27784',
-    'L37830',
-    'L26735',
-    'S27785',
-    'L37831',
-    'L26736',
-    'S27786',
-  ];
-
-  const getFilteredPayers = (search: string) => {
-    if (!search.trim()) return payerOptions;
-    return payerOptions.filter((p) => p.toLowerCase().includes(search.toLowerCase()));
-  };
-
-  const getFilteredProviders = (search: string) => {
-    if (!search.trim()) return providerOptions;
-    return providerOptions.filter((p) => p.toLowerCase().includes(search.toLowerCase()));
-  };
-
-  const addPayer = (payer: string) => {
-    if (!topPayers.includes(payer)) {
-      setTopPayers([...topPayers, payer]);
-    }
-    setPayerPopoverOpen(false);
-    setPayerSearchValue('');
-  };
-
-  const removePayer = (payer: string) => {
-    setTopPayers(topPayers.filter((p) => p !== payer));
-  };
-
-  const addProvider = (provider: string) => {
-    if (!topProviders.includes(provider)) {
-      setTopProviders([...topProviders, provider]);
-    }
-    setProviderPopoverOpen(false);
-    setProviderSearchValue('');
-  };
-
-  const removeProvider = (provider: string) => {
-    setTopProviders(topProviders.filter((p) => p !== provider));
-  };
-
-  useEffect(() => {
-    const handleClick = (event: MouseEvent) => {
-      if (
-        payerPopoverRef.current &&
-        !payerPopoverRef.current.contains(event.target as Node) &&
-        payerButtonRef.current &&
-        !payerButtonRef.current.contains(event.target as Node)
-      ) {
-        setPayerPopoverOpen(false);
-        setPayerSearchValue('');
-      }
-      if (
-        providerPopoverRef.current &&
-        !providerPopoverRef.current.contains(event.target as Node) &&
-        providerButtonRef.current &&
-        !providerButtonRef.current.contains(event.target as Node)
-      ) {
-        setProviderPopoverOpen(false);
-        setProviderSearchValue('');
-      }
-    };
-
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
 
   // Generate AI summary from scope data with AND/OR relationships
   const generateScopeSummary = (): string => {
@@ -611,12 +519,6 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
     const clearRatesDesc = describeSection(conditions, 'Clear Rates');
     if (clearRatesDesc) sectionDescriptions.push(clearRatesDesc);
     
-    const hospitalRatesDesc = describeSection(hospitalRatesConditions, 'Hospital Rates');
-    if (hospitalRatesDesc) sectionDescriptions.push(hospitalRatesDesc);
-    
-    const payerRatesDesc = describeSection(payerRatesConditions, 'Payer Rates');
-    if (payerRatesDesc) sectionDescriptions.push(payerRatesDesc);
-    
     if (sectionDescriptions.length === 0) {
       return 'No scope has been configured yet. Add scopes to define access rules.';
     }
@@ -637,7 +539,7 @@ export default function AnalyzeProductSettings({ groupId }: AnalyzeProductSettin
   };
 
   // Helper function to render a conditions section
-  const renderConditionsSection = (section: 'clear' | 'hospital' | 'payer', sectionTitle: string) => {
+  const renderConditionsSection = (section: 'clear', sectionTitle: string) => {
     const sectionConditions = getConditions(section);
     const isEmpty = sectionConditions.length === 0;
 
