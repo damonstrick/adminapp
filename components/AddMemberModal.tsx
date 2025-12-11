@@ -19,6 +19,7 @@ interface EmailTag {
 }
 
 type RoleOption = 'None' | 'Viewer' | 'Editor' | 'Admin';
+type QuickAssignRole = RoleOption | 'Mixed';
 
 interface ProductRole {
   product: string;
@@ -38,6 +39,29 @@ const ROLE_OPTIONS: RoleOption[] = ['None', 'Viewer', 'Editor', 'Admin'];
 // Mock data - in a real app, this would come from API calls
 const DEFAULT_EXISTING_TQ_USERS = ['sammyvirji@email.com', 'jamison.mueller@email.com'];
 
+const availableGroups = [
+  { id: 'company-admins', name: 'Company Admins', description: 'Full administrative access to all platform features and settings' },
+  { id: 'product-managers', name: 'Product Managers', description: 'Access to product configuration and analytics dashboard' },
+  { id: 'sales-team', name: 'Sales Team', description: 'Access to sales data, contracts, and customer information' },
+  { id: 'marketing-dept', name: 'Marketing Department', description: 'Read-only access to marketing analytics and campaign data' },
+  { id: 'it-ops', name: 'IT Operations', description: 'System administration and technical support access' },
+  { id: 'finance-accounting', name: 'Finance & Accounting', description: 'Financial reporting and billing access' },
+  { id: 'human-resources', name: 'Human Resources', description: 'Employee management and organizational data access' },
+  { id: 'clinical-staff', name: 'Clinical Staff', description: 'Patient data and clinical workflow access' },
+  { id: 'data-analysts', name: 'Data Analysts', description: 'Advanced analytics and reporting capabilities' },
+  { id: 'compliance-officers', name: 'Compliance Officers', description: 'Regulatory compliance monitoring and reporting' },
+  { id: 'executive-leadership', name: 'Executive Leadership', description: 'High-level dashboard and strategic reporting access' },
+  { id: 'quality-assurance', name: 'Quality Assurance', description: 'Quality metrics and performance monitoring tools' },
+  { id: 'customer-support', name: 'Customer Support', description: 'Customer service tools and support ticket access' },
+  { id: 'research-dev', name: 'Research & Development', description: 'R&D data and experimental feature access' },
+  { id: 'legal-dept', name: 'Legal Department', description: 'Legal document management and compliance tracking' },
+  { id: 'operations-team', name: 'Operations Team', description: 'Day-to-day operational data and process management' },
+  { id: 'training-dev', name: 'Training & Development', description: 'Learning management system and training materials' },
+  { id: 'security-team', name: 'Security Team', description: 'Security monitoring and access control management' },
+  { id: 'external-consultants', name: 'External Consultants', description: 'Limited access for external consulting partners' },
+  { id: 'regional-managers', name: 'Regional Managers', description: 'Regional data access and management capabilities' },
+];
+
 export default function AddMemberModal({ 
   isOpen, 
   onClose, 
@@ -52,14 +76,121 @@ export default function AddMemberModal({
   const [autocompletePosition, setAutocompletePosition] = useState({ top: 0, left: 0, width: 0 });
   const [memberProductRoles, setMemberProductRoles] = useState<MemberProductRoles[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [quickAssignRoles, setQuickAssignRoles] = useState<{ [key: string]: RoleOption }>({
+  const [quickAssignRoles, setQuickAssignRoles] = useState<{ [key: string]: QuickAssignRole }>({
     'Clear Contracts': 'None',
     [ANALYZE_PRODUCT_NAME]: 'None',
     [MRF_SEARCH_PRODUCT_NAME]: 'None',
   });
+  const [customizeFeaturesOpen, setCustomizeFeaturesOpen] = useState(false);
+  const [customizeFeaturesMemberEmail, setCustomizeFeaturesMemberEmail] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [groupSearchQuery, setGroupSearchQuery] = useState('');
+  const [groupDropdownOpen, setGroupDropdownOpen] = useState(false);
+  const groupDropdownRef = useRef<HTMLDivElement>(null);
+  const groupInputRef = useRef<HTMLInputElement>(null);
+  const [groupDropdownPosition, setGroupDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  
+  // Customize Features state
+  const [askTqContract, setAskTqContract] = useState(true);
+  const [askTqPayerPolicy, setAskTqPayerPolicy] = useState(true);
+  const [documentViewer, setDocumentViewer] = useState(true);
+  const [rateSummary, setRateSummary] = useState(true);
+  const [scenarioModeling, setScenarioModeling] = useState(true);
+  const [analyzeExportRateLimit, setAnalyzeExportRateLimit] = useState('10');
+  const [mrfSearchExportData, setMrfSearchExportData] = useState(false);
+  const [mrfSearchExportRateLimit, setMrfSearchExportRateLimit] = useState('10');
+  
+  // Scope state
+  type ScopeType = 'Providers' | 'Payers' | 'Payer Networks' | 'States' | 'Contract Types' | 'Plans' | 'Labels' | 'Document Type' | 'Services' | 'Billing Codes';
+  interface Scope {
+    id: string;
+    type: ScopeType;
+    tags: string[];
+  }
+  interface Condition {
+    id: string;
+    scopes: Scope[];
+  }
+  const SCOPE_TYPES: ScopeType[] = ['Providers', 'Payers', 'Payer Networks', 'States', 'Contract Types', 'Plans', 'Labels', 'Document Type', 'Services', 'Billing Codes'];
+  const [scopeConditions, setScopeConditions] = useState<Condition[]>([]);
+  const [addScopePopover, setAddScopePopover] = useState<{ conditionId: string | null; open: boolean } | null>(null);
+  const [addTagPopover, setAddTagPopover] = useState<{ conditionId: string; scopeId: string; open: boolean } | null>(null);
+  const [scopeSearchValue, setScopeSearchValue] = useState('');
+  const [tagSearchValue, setTagSearchValue] = useState('');
+  const addScopeRef = useRef<HTMLDivElement>(null);
+  const addTagRef = useRef<HTMLDivElement>(null);
+
+  // Compute quick assign roles based on member product roles
+  const computeQuickAssignRole = (productKey: 'clearContracts' | 'analyze' | 'mrfSearch'): QuickAssignRole => {
+    if (memberProductRoles.length === 0) return 'None';
+    
+    const firstRole = memberProductRoles[0][productKey];
+    const allSame = memberProductRoles.every(member => member[productKey] === firstRole);
+    
+    return allSame ? firstRole : 'Mixed';
+  };
+
+  // Update quick assign roles when member product roles change
+  useEffect(() => {
+    if (step === 2 && memberProductRoles.length > 0) {
+      setQuickAssignRoles({
+        'Clear Contracts': computeQuickAssignRole('clearContracts'),
+        [ANALYZE_PRODUCT_NAME]: computeQuickAssignRole('analyze'),
+        [MRF_SEARCH_PRODUCT_NAME]: computeQuickAssignRole('mrfSearch'),
+      });
+    }
+  }, [memberProductRoles, step]);
   const inputRef = useRef<HTMLInputElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const autocompleteRef = useRef<HTMLDivElement>(null);
+
+  // Filter groups based on search query
+  const filteredGroups = availableGroups.filter(group => {
+    if (!groupSearchQuery.trim()) return true;
+    const searchLower = groupSearchQuery.toLowerCase();
+    return (
+      group.name.toLowerCase().includes(searchLower) ||
+      group.description.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Close group dropdown when clicking outside and update position on scroll/resize
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (groupDropdownRef.current && !groupDropdownRef.current.contains(target)) {
+        // Check if click is on the dropdown itself
+        const dropdown = document.querySelector('[data-group-dropdown]');
+        if (dropdown && dropdown.contains(target)) {
+          return;
+        }
+        setGroupDropdownOpen(false);
+      }
+    };
+    
+    const updatePosition = () => {
+      if (groupDropdownRef.current && groupDropdownOpen) {
+        const rect = groupDropdownRef.current.getBoundingClientRect();
+        setGroupDropdownPosition({
+          top: rect.bottom + 4,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    if (groupDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      updatePosition();
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [groupDropdownOpen]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -75,6 +206,11 @@ export default function AddMemberModal({
         [ANALYZE_PRODUCT_NAME]: 'None',
         [MRF_SEARCH_PRODUCT_NAME]: 'None',
       });
+      setCustomizeFeaturesOpen(false);
+      setCustomizeFeaturesMemberEmail(null);
+      setSelectedGroup(null);
+      setGroupSearchQuery('');
+      setGroupDropdownOpen(false);
     }
   }, [isOpen]);
 
@@ -284,8 +420,6 @@ export default function AddMemberModal({
   };
 
   const handleQuickAssignRoleChange = (product: string, role: RoleOption) => {
-    setQuickAssignRoles(prev => ({ ...prev, [product]: role }));
-    
     // Apply the role to all members for this product
     const productKey = product === 'Clear Contracts' ? 'clearContracts' : 
                        product === ANALYZE_PRODUCT_NAME ? 'analyze' : 'mrfSearch';
@@ -296,6 +430,7 @@ export default function AddMemberModal({
         [productKey]: role
       }))
     );
+    // quickAssignRoles will be updated automatically via useEffect
   };
 
   const handleContinueToReview = () => {
@@ -305,6 +440,7 @@ export default function AddMemberModal({
   const handleSendInvitations = () => {
     // Handle invite logic here
     console.log('Inviting members with roles:', memberProductRoles);
+    console.log('Selected group:', selectedGroup);
     
     // Count different types of members
     const newUsers = emailTags.filter(tag => tag.status === 'new-user');
@@ -340,6 +476,219 @@ export default function AddMemberModal({
     member.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Scope helper functions
+  const getScopeOptions = (scopeType: ScopeType): string[] => {
+    switch (scopeType) {
+      case 'Providers':
+        return ['Cherry Creek Health', 'Banner Health', 'CommonSpirit', 'Mayo Health', 'HonorHealth', 'St. Mary\'s Medical Center', 'Regional Health Network', 'Community Care Clinic', 'Metro General Hospital', 'Riverside Medical Group'];
+      case 'Payers':
+        return ['Aetna', 'Blue Cross Blue Shield', 'Cigna', 'UnitedHealthcare', 'Humana', 'Anthem', 'Kaiser Permanente', 'Medicaid', 'Medicare', 'Tricare'];
+      case 'Payer Networks':
+        return ['AL HMO', 'AZ PPO', 'Blue Choice', 'Gold Network', 'Silver Network', 'Platinum Network', 'Basic Network', 'Premium Network', 'Standard Network', 'Elite Network'];
+      case 'States':
+        return ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'];
+      case 'Contract Types':
+        return ['Base Language', 'Amendment', 'Addendum', 'Renewal', 'Termination', 'Modification', 'Original', 'Superseded', 'Active', 'Inactive'];
+      case 'Plans':
+        return ['Gold', 'Silver', 'Bronze', 'Platinum', 'Basic', 'Premium', 'Standard', 'Elite', 'HMO', 'PPO', 'EPO', 'POS'];
+      case 'Labels':
+        return ['Active', 'Pending', 'Expired', 'Draft', 'Approved', 'Rejected', 'Under Review', 'Archived', 'Renewal Due', 'Terminated'];
+      case 'Document Type':
+        return ['Base Language', 'Amendment', 'Addendum', 'Renewal', 'Termination', 'Modification', 'Original Contract', 'Superseded Contract', 'Active Contract', 'Inactive Contract'];
+      case 'Services':
+        return ['L37829', 'L26734', 'S27783', 'S27784', 'L37830', 'L26735', 'S27785', 'L37831', 'L26736', 'S27786'];
+      case 'Billing Codes':
+        return ['HCPCS C9741', 'HCPCS C9742', 'APC 62772', 'APC 62773', 'CPT 99213', 'CPT 99214', 'CPT 99215', 'ICD-10 Z00.00', 'ICD-10 Z00.01', 'MS-DRG 001', 'MS-DRG 002', 'MS-DRG 003'];
+      default:
+        return [];
+    }
+  };
+
+  const getFilteredOptions = (scopeType: ScopeType, searchValue: string): string[] => {
+    const options = getScopeOptions(scopeType);
+    if (!searchValue.trim()) return options;
+    return options.filter(option => 
+      option.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  };
+
+  const getFilteredScopeTypes = (searchValue: string): ScopeType[] => {
+    if (!searchValue.trim()) return SCOPE_TYPES;
+    return SCOPE_TYPES.filter(type => 
+      type.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  };
+
+  // Close scope popovers when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (addScopeRef.current && !addScopeRef.current.contains(event.target as Node)) {
+        setAddScopePopover(null);
+        setScopeSearchValue('');
+      }
+      if (addTagRef.current && !addTagRef.current.contains(event.target as Node)) {
+        setAddTagPopover(null);
+        setTagSearchValue('');
+      }
+    };
+
+    if (addScopePopover || addTagPopover) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [addScopePopover, addTagPopover]);
+
+  const addScope = (conditionId: string | null, scopeType: ScopeType) => {
+    if (conditionId === null) {
+      const newCondition: Condition = {
+        id: Date.now().toString(),
+        scopes: [{ id: `${Date.now()}-1`, type: scopeType, tags: [] }],
+      };
+      setScopeConditions([newCondition]);
+    } else {
+      setScopeConditions(scopeConditions.map(condition => {
+        if (condition.id === conditionId) {
+          return {
+            ...condition,
+            scopes: [...condition.scopes, { id: `${conditionId}-${Date.now()}`, type: scopeType, tags: [] }],
+          };
+        }
+        return condition;
+      }));
+    }
+    setAddScopePopover(null);
+    setScopeSearchValue('');
+  };
+
+  const removeScope = (conditionId: string, scopeId: string) => {
+    setScopeConditions(scopeConditions.map(condition => {
+      if (condition.id === conditionId) {
+        const newScopes = condition.scopes.filter(s => s.id !== scopeId);
+        return { ...condition, scopes: newScopes };
+      }
+      return condition;
+    }));
+  };
+
+  const findMatchingOption = (scopeType: ScopeType, inputValue: string): string | null => {
+    const options = getScopeOptions(scopeType);
+    const trimmedInput = inputValue.trim();
+    if (!trimmedInput) return null;
+    
+    const normalizedInput = trimmedInput.toLowerCase();
+    const exactMatch = options.find(opt => opt.toLowerCase() === normalizedInput);
+    if (exactMatch) return exactMatch;
+    
+    if (normalizedInput.length >= 3) {
+      const startsWithMatch = options.find(opt => opt.toLowerCase().startsWith(normalizedInput));
+      if (startsWithMatch) return startsWithMatch;
+    }
+    
+    const partialMatch = options.find(opt => {
+      const optLower = opt.toLowerCase();
+      return optLower.includes(normalizedInput) || normalizedInput.includes(optLower);
+    });
+    if (partialMatch) return partialMatch;
+    
+    return trimmedInput;
+  };
+
+  const addTagsFromCommaSeparated = (conditionId: string, scopeId: string, inputValue: string) => {
+    const trimmedInput = inputValue.trim();
+    if (!trimmedInput) return;
+    
+    const condition = scopeConditions.find(c => c.id === conditionId);
+    if (!condition) return;
+    
+    const scope = condition.scopes.find(s => s.id === scopeId);
+    if (!scope) return;
+    
+    const values = trimmedInput.split(',').map(v => v.trim()).filter(v => v.length > 0);
+    const tagsToAdd: string[] = [];
+    const existingTagsLower = new Set(scope.tags.map(tag => tag.toLowerCase()));
+    
+    values.forEach(value => {
+      if (!value) return;
+      const matchingOption = findMatchingOption(scope.type, value);
+      if (matchingOption && matchingOption.trim()) {
+        const alreadyExists = existingTagsLower.has(matchingOption.toLowerCase());
+        if (!alreadyExists) {
+          tagsToAdd.push(matchingOption);
+          existingTagsLower.add(matchingOption.toLowerCase());
+        }
+      }
+    });
+    
+    if (tagsToAdd.length > 0) {
+      setScopeConditions(scopeConditions.map(condition => {
+        if (condition.id === conditionId) {
+          return {
+            ...condition,
+            scopes: condition.scopes.map(s => {
+              if (s.id === scopeId) {
+                return { ...s, tags: [...s.tags, ...tagsToAdd] };
+              }
+              return s;
+            }),
+          };
+        }
+        return condition;
+      }));
+    }
+    
+    setTagSearchValue('');
+  };
+
+  const addTag = (conditionId: string, scopeId: string, tagValue: string) => {
+    const condition = scopeConditions.find(c => c.id === conditionId);
+    if (!condition) return;
+    
+    const scope = condition.scopes.find(s => s.id === scopeId);
+    if (!scope) return;
+    
+    const matchingOption = findMatchingOption(scope.type, tagValue);
+    if (matchingOption) {
+      setScopeConditions(scopeConditions.map(condition => {
+        if (condition.id === conditionId) {
+          return {
+            ...condition,
+            scopes: condition.scopes.map(scope => {
+              if (scope.id === scopeId) {
+                const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+                if (existingTagsLower.includes(matchingOption.toLowerCase())) {
+                  return scope;
+                }
+                return { ...scope, tags: [...scope.tags, matchingOption] };
+              }
+              return scope;
+            }),
+          };
+        }
+        return condition;
+      }));
+    }
+    setAddTagPopover(null);
+    setTagSearchValue('');
+  };
+
+  const removeScopeTag = (conditionId: string, scopeId: string, tagIndex: number) => {
+    setScopeConditions(scopeConditions.map(condition => {
+      if (condition.id === conditionId) {
+        return {
+          ...condition,
+          scopes: condition.scopes.map(scope => {
+            if (scope.id === scopeId) {
+              const newTags = scope.tags.filter((_, i) => i !== tagIndex);
+              return { ...scope, tags: newTags };
+            }
+            return scope;
+          }),
+        };
+      }
+      return condition;
+    }));
+  };
+
   if (!isOpen) return null;
 
   const renderStep1 = () => (
@@ -357,7 +706,7 @@ export default function AddMemberModal({
       </div>
 
       {/* Content Container */}
-      <div className="bg-white flex flex-col gap-4 items-start overflow-y-auto px-4 py-6 relative shrink-0 w-full" style={{ overflowX: 'visible' }}>
+      <div className="bg-white flex flex-col gap-4 items-start overflow-y-auto px-4 py-6 relative flex-1 min-h-0 w-full" style={{ overflowX: 'visible' }}>
         <div className="flex flex-col gap-2 items-start relative shrink-0 w-full" style={{ position: 'relative', zIndex: 1 }}>
           <div className="flex gap-1 items-center relative shrink-0">
             <p className="font-normal leading-4 relative shrink-0 text-[#121313] text-xs tracking-[0.12px] whitespace-pre">
@@ -482,6 +831,95 @@ export default function AddMemberModal({
             </div>
           </div>
         )}
+
+        {/* Group Selection */}
+        <div className="flex flex-col gap-2 items-start relative shrink-0 w-full" style={{ position: 'relative', zIndex: 2 }}>
+          <div className="flex gap-1 items-center relative shrink-0">
+            <p className="font-normal leading-4 relative shrink-0 text-[#121313] text-xs tracking-[0.12px] whitespace-pre">
+              Add to Group <span className="text-[#6e8081]">(Optional)</span>
+            </p>
+          </div>
+          <div ref={groupDropdownRef} className="relative w-full">
+            {selectedGroup ? (
+              <div className="bg-white border border-[#e3e7ea] rounded flex items-center justify-between px-3 py-2 min-h-[40px]">
+                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                  <p className="text-xs font-medium text-[#121313] truncate">{selectedGroup.name}</p>
+                  <p className="text-[11px] text-[#6e8081] truncate">{selectedGroup.description}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedGroup(null);
+                    setGroupSearchQuery('');
+                  }}
+                  className="ml-2 w-4 h-4 flex items-center justify-center hover:opacity-70 shrink-0"
+                >
+                  <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="bg-white border border-[#e3e7ea] rounded flex items-center px-3 py-2 min-h-[40px]">
+                  <svg className="w-4 h-4 text-[#4b595c] mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    ref={groupInputRef}
+                    type="text"
+                    value={groupSearchQuery}
+                    onChange={(e) => {
+                      setGroupSearchQuery(e.target.value);
+                      setGroupDropdownOpen(true);
+                    }}
+                    onFocus={() => {
+                      setGroupDropdownOpen(true);
+                      if (groupDropdownRef.current) {
+                        const rect = groupDropdownRef.current.getBoundingClientRect();
+                        setGroupDropdownPosition({
+                          top: rect.bottom + 4,
+                          left: rect.left,
+                          width: rect.width,
+                        });
+                      }
+                    }}
+                    placeholder="Search groups..."
+                    className="flex-1 text-xs text-[#121313] outline-none bg-transparent placeholder:text-[#89989b]"
+                  />
+                  <svg className={`w-4 h-4 text-[#4b595c] shrink-0 transition-transform ${groupDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                {groupDropdownOpen && filteredGroups.length > 0 && (
+                  <div
+                    data-group-dropdown
+                    className="fixed bg-white border border-[#e3e7ea] rounded shadow-lg z-[9999] max-h-60 overflow-y-auto"
+                    style={{
+                      top: `${groupDropdownPosition.top}px`,
+                      left: `${groupDropdownPosition.left}px`,
+                      width: `${groupDropdownPosition.width}px`,
+                    }}
+                  >
+                    {filteredGroups.map((group) => (
+                      <button
+                        key={group.id}
+                        onClick={() => {
+                          setSelectedGroup(group);
+                          setGroupSearchQuery('');
+                          setGroupDropdownOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left hover:bg-[#f0f2f2] border-b border-[#e3e7ea] last:border-b-0"
+                      >
+                        <p className="text-xs font-medium text-[#121313]">{group.name}</p>
+                        <p className="text-[11px] text-[#6e8081] mt-0.5">{group.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Bottom Bar */}
@@ -530,7 +968,14 @@ export default function AddMemberModal({
       }
     }, [isOpen]);
 
-    const getRoleIcon = (role: RoleOption) => {
+    const getRoleIcon = (role: RoleOption | 'Mixed') => {
+      if (role === 'Mixed') {
+        return (
+          <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        );
+      }
       if (role === 'Admin') {
         return (
           <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -566,7 +1011,7 @@ export default function AddMemberModal({
           className="w-full h-8 px-3 pl-10 border border-[#e3e7ea] rounded flex items-center justify-between hover:bg-[#f0f2f2] text-xs text-[#121313] bg-white"
         >
           <div className="flex items-center gap-2 absolute left-3">
-            {getRoleIcon(selectedRole as RoleOption)}
+            {getRoleIcon(selectedRole)}
           </div>
           <span className="flex-1 text-left">{selectedRole}</span>
           <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -594,6 +1039,96 @@ export default function AddMemberModal({
     );
   };
 
+
+  const getRoleIcon = (role: RoleOption, size: 'sm' | 'md' = 'md', isSelected: boolean = false, isInButtonGroup: boolean = false) => {
+    const iconSize = size === 'sm' ? 'w-3 h-3' : 'w-3 h-3';
+    const iconColor = isSelected && isInButtonGroup ? 'text-white' : isSelected ? 'text-[#121313]' : 'text-[#6E8081]';
+    
+    if (role === 'Admin') {
+      return (
+        <svg className={`${iconSize} ${iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      );
+    } else if (role === 'Editor') {
+      return (
+        <svg className={`${iconSize} ${iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      );
+    } else if (role === 'Viewer') {
+      return (
+        <svg className={`${iconSize} ${iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      );
+    } else { // None
+      return (
+        <svg className={`${iconSize} ${iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+        </svg>
+      );
+    }
+  };
+
+  const RolePillDropdown = ({ email, product }: { email: string; product: 'clearContracts' | 'analyze' | 'mrfSearch' }) => {
+    const member = memberProductRoles.find(m => m.email === email);
+    const currentRole = member ? member[product] : 'None';
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+        }
+      };
+      if (isOpen) {
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+      }
+    }, [isOpen]);
+
+    return (
+      <div 
+        ref={dropdownRef} 
+        className="relative py-3.5 cursor-pointer flex items-center justify-between h-full"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="bg-[#f0f2f2] flex items-center justify-center px-2 py-0.5 rounded-full">
+          <p className="font-medium text-[11px] text-[#121313] leading-4 tracking-[0.11px] whitespace-nowrap">
+            {currentRole}
+          </p>
+        </div>
+        <svg className="w-4 h-4 text-[#4b595c] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+        {isOpen && (
+          <div className="absolute z-50 top-full left-[-8px] right-[-8px] bg-white border border-[#e3e7ea] rounded shadow-lg p-2">
+            {ROLE_OPTIONS.map(role => (
+              <button
+                key={role}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRoleChange(email, product, role);
+                  setIsOpen(false);
+                }}
+                className="w-full px-2 py-1.5 hover:bg-[#f0f2f2] rounded flex items-center justify-start"
+              >
+                <div className="bg-[#f0f2f2] flex items-center justify-center px-2 py-0.5 rounded-full">
+                  <p className="font-medium text-[11px] text-[#121313] leading-4 tracking-[0.11px] whitespace-nowrap">
+                    {role}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const RoleDropdown = ({ email, product }: { email: string; product: 'clearContracts' | 'analyze' | 'mrfSearch' }) => {
     const member = memberProductRoles.find(m => m.email === email);
     const currentRole = member ? member[product] : 'None';
@@ -612,35 +1147,6 @@ export default function AddMemberModal({
       }
     }, [isOpen]);
 
-    const getRoleIcon = (role: RoleOption) => {
-      if (role === 'Admin') {
-        return (
-          <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-        );
-      } else if (role === 'Editor') {
-        return (
-          <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        );
-      } else if (role === 'Viewer') {
-        return (
-          <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-        );
-      } else { // None
-        return (
-          <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-          </svg>
-        );
-      }
-    };
-
     return (
       <div ref={dropdownRef} className="relative">
         <button
@@ -648,7 +1154,7 @@ export default function AddMemberModal({
           className="w-full h-8 px-3 border border-[#e3e7ea] rounded flex items-center justify-between hover:bg-[#f0f2f2] text-xs text-[#121313]"
         >
           <div className="flex items-center gap-2">
-            {getRoleIcon(currentRole)}
+            {getRoleIcon(currentRole, 'md', true)}
             <span>{currentRole}</span>
           </div>
           <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -666,7 +1172,7 @@ export default function AddMemberModal({
                 }}
                 className="w-full px-3 py-2 text-left text-xs text-[#121313] hover:bg-[#f0f2f2] flex items-center gap-2"
               >
-                {getRoleIcon(role)}
+                {getRoleIcon(role, 'md', role === currentRole)}
                 <span>{role}</span>
               </button>
             ))}
@@ -718,12 +1224,12 @@ export default function AddMemberModal({
         </div>
 
         {/* Content Container */}
-        <div className="bg-white flex flex-col gap-4 items-start overflow-y-auto px-4 py-4 relative shrink-0 w-full">
-          {/* Quick assign to all members */}
-          <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4 w-full">
-            <div className="flex flex-col gap-3 w-full">
-              <p className="text-xs text-[#6E8081] font-normal">Quick assign to all members</p>
-              <div className="flex gap-4">
+        <div className="bg-white flex flex-col gap-4 items-start px-4 py-4 relative flex-1 min-h-0 w-full">
+          {/* Quick assign to all members - Fixed */}
+          <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4 w-full shrink-0">
+            <div className="flex flex-col w-full">
+              <p className="text-xs text-[#6E8081] font-normal mb-3">Quick assign to all members</p>
+              <div className="flex gap-4 mb-4">
                 {PRODUCTS.map((product) => {
                   const getProductIcon = (p: string) => {
                     if (p === 'Clear Contracts') {
@@ -757,11 +1263,23 @@ export default function AddMemberModal({
                   );
                 })}
               </div>
+              <button 
+                onClick={() => {
+                  setCustomizeFeaturesMemberEmail(null);
+                  setCustomizeFeaturesOpen(true);
+                }}
+                className="w-full h-8 px-3 py-2 border border-[#e3e7ea] rounded flex items-center justify-center gap-2 bg-white hover:bg-[#f0f2f2]"
+              >
+                <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <p className="text-xs font-medium text-[#121313]">Customize Features</p>
+              </button>
             </div>
           </div>
 
-          {/* Search */}
-          <div className="w-full">
+          {/* Search - Fixed */}
+          <div className="w-full shrink-0">
             <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded flex items-center h-8 px-3 gap-2">
               <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -770,7 +1288,7 @@ export default function AddMemberModal({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Ask a question or search"
+                placeholder="Search by email..."
                 className="flex-1 bg-transparent text-xs text-[#121313] outline-none placeholder:text-[#89989b]"
               />
               <div className="bg-white border border-[#e3e7ea] rounded px-1.5 py-0.5">
@@ -779,35 +1297,55 @@ export default function AddMemberModal({
             </div>
           </div>
 
-          {/* Table */}
-          <div className="w-full border border-[#e3e7ea] rounded">
-            <div className="grid grid-cols-4 border-b border-[#e3e7ea]">
-              <div className="px-3 py-2 border-r border-[#e3e7ea]">
+          {/* Table - Scrollable */}
+          <div className="w-full border border-[#e3e7ea] rounded flex-1 min-h-0 overflow-y-auto">
+            <div className="grid border-b border-[#e3e7ea] bg-[#f7f8f8]" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr auto' }}>
+              <div className="pl-3 pr-0 py-2 border-r border-[#e3e7ea]">
                 <p className="text-xs font-medium text-[#121313]">Email</p>
               </div>
-              <div className="px-3 py-2 border-r border-[#e3e7ea]">
+              <div className="pl-2 pr-2 py-2 border-r border-[#e3e7ea]">
                 <p className="text-xs font-medium text-[#121313]">Clear Contracts</p>
               </div>
-              <div className="px-3 py-2 border-r border-[#e3e7ea]">
+              <div className="pl-2 pr-2 py-2 border-r border-[#e3e7ea]">
                 <p className="text-xs font-medium text-[#121313]">{ANALYZE_PRODUCT_NAME}</p>
               </div>
-              <div className="px-3 py-2">
+              <div className="pl-2 pr-2 py-2 border-r border-[#e3e7ea]">
                 <p className="text-xs font-medium text-[#121313]">{MRF_SEARCH_PRODUCT_NAME}</p>
+              </div>
+              <div className="pr-0 py-2 w-8">
+                <div className="w-8 invisible pointer-events-none">
+                  <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                </div>
               </div>
             </div>
             {filteredMembers.map((member) => (
-              <div key={member.email} className="grid grid-cols-4 border-b border-[#e3e7ea] last:border-b-0">
-                <div className="px-3 py-3.5 border-r border-[#e3e7ea] min-w-0 overflow-hidden">
-                  <p className="text-xs text-[#121313] truncate">{member.email}</p>
+              <div key={member.email} className="grid border-b border-[#e3e7ea] last:border-b-0" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr auto' }}>
+                <div className="pl-3 pr-0 py-3.5 min-w-0 overflow-hidden border-r border-[#e3e7ea]">
+                  <p className="text-xs text-[#121313] truncate" title={member.email}>{member.email}</p>
                 </div>
-                <div className="px-3 py-3.5 border-r border-[#e3e7ea]">
-                  <RoleDropdown email={member.email} product="clearContracts" />
+                <div className="pl-2 pr-2 border-r border-[#e3e7ea] hover:bg-[#f0f2f2]">
+                  <RolePillDropdown email={member.email} product="clearContracts" />
                 </div>
-                <div className="px-3 py-3.5 border-r border-[#e3e7ea]">
-                  <RoleDropdown email={member.email} product="analyze" />
+                <div className="pl-2 pr-2 border-r border-[#e3e7ea] hover:bg-[#f0f2f2]">
+                  <RolePillDropdown email={member.email} product="analyze" />
                 </div>
-                <div className="px-3 py-3.5">
-                  <RoleDropdown email={member.email} product="mrfSearch" />
+                <div className="pl-2 pr-2 border-r border-[#e3e7ea] hover:bg-[#f0f2f2]">
+                  <RolePillDropdown email={member.email} product="mrfSearch" />
+                </div>
+                <div className="pr-0 py-3.5 flex items-center justify-center w-auto">
+                  <button 
+                    onClick={() => {
+                      setCustomizeFeaturesMemberEmail(member.email);
+                      setCustomizeFeaturesOpen(true);
+                    }}
+                    className="w-8 h-8 flex items-center justify-center rounded cursor-pointer group"
+                  >
+                    <svg className="w-4 h-4 text-[#4b595c] group-hover:text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}
@@ -964,7 +1502,7 @@ export default function AddMemberModal({
         </div>
 
         {/* Content Container */}
-        <div className="bg-white flex flex-col gap-6 items-start overflow-y-auto px-4 py-4 relative shrink-0 w-full">
+        <div className="bg-white flex flex-col gap-6 items-start overflow-y-auto px-4 py-4 relative flex-1 min-h-0 w-full">
           {/* Header */}
           <div className="flex flex-col gap-2 w-full">
             <p className="font-semibold text-sm text-[#121313]">Review & Confirm</p>
@@ -1020,6 +1558,17 @@ export default function AddMemberModal({
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Group Assignment Card */}
+            {selectedGroup && (
+              <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-3 w-full">
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs font-medium text-[#121313]">Group Assignment</p>
+                  <p className="text-xs font-medium text-[#121313] mt-1">{selectedGroup.name}</p>
+                  <p className="text-[11px] text-[#6e8081] mt-0.5">{selectedGroup.description}</p>
                 </div>
               </div>
             )}
@@ -1149,6 +1698,372 @@ export default function AddMemberModal({
       </>
     );
   };
+
+  const renderCustomizeFeaturesModal = () => {
+    const isQuickAssign = customizeFeaturesMemberEmail === null;
+    const headerTitle = isQuickAssign ? 'Customize Features' : customizeFeaturesMemberEmail;
+    const headerSubtext = isQuickAssign 
+      ? 'Turn on and off featured based on products. These will be applied to all member in the list.'
+      : 'Turn on and off featured based on products. These will be applied only to this member.';
+
+    return (
+      <>
+        {/* Content Container */}
+        <div className="bg-white flex flex-col gap-6 items-start overflow-y-auto px-4 py-4 relative flex-1 min-h-0 w-full">
+          {/* Header Section */}
+          <div className="bg-[#f7f8f8] rounded-lg p-3 w-full">
+            <div className="flex flex-col gap-1">
+              <p className="text-base font-semibold text-[#121313]">{headerTitle}</p>
+              <p className="text-xs text-[#6e8081]">
+                {headerSubtext}
+              </p>
+            </div>
+          </div>
+
+          {/* Clear Contracts Section */}
+          <div className="border-b border-[#e3e7ea] flex flex-col gap-6 w-full pb-6">
+            <p className="text-sm font-semibold text-[#121313]">Clear Contracts</p>
+            <div className="flex flex-col gap-4 pl-4">
+              {[
+                { label: 'AskTQ Contract', value: askTqContract, setter: setAskTqContract },
+                { label: 'Ask TQ Payer Policy', value: askTqPayerPolicy, setter: setAskTqPayerPolicy },
+                { label: 'Document Viewer', value: documentViewer, setter: setDocumentViewer },
+                { label: 'Rate Summary', value: rateSummary, setter: setRateSummary },
+                { label: 'Scenario Modeling', value: scenarioModeling, setter: setScenarioModeling },
+              ].map((toggle) => (
+                <div key={toggle.label} className="flex items-center justify-between w-full">
+                  <p className="text-xs font-medium text-[#121313] flex-1">{toggle.label}</p>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={toggle.value}
+                      onChange={(e) => toggle.setter(e.target.checked)}
+                    />
+                    <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:bg-[#16696d] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Scope Section */}
+          <div className="flex flex-col gap-6 w-full">
+            <p className="text-sm font-semibold text-[#121313]">Scope</p>
+            {scopeConditions.length === 0 ? (
+              <div className="border border-[#e3e7ea] rounded-lg flex flex-col items-start relative shrink-0 w-full">
+                <div className="relative w-full flex justify-center">
+                  <button
+                    onClick={() => setAddScopePopover({ conditionId: null, open: true })}
+                    className="flex flex-col h-8 items-start justify-center overflow-clip relative shrink-0 w-full cursor-pointer hover:bg-[#f7f8f8]"
+                  >
+                    <div className="box-border flex gap-4 items-center justify-center px-3 py-0 relative shrink-0 w-full">
+                      <div className="flex gap-2 grow items-center">
+                        <p className="font-medium leading-4 relative shrink-0 text-[#121313] text-xs tracking-[0.12px]">
+                          Add Scope
+                        </p>
+                      </div>
+                      <div className="flex-none rotate-90">
+                        <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </div>
+                    </div>
+                  </button>
+                  {addScopePopover?.conditionId === null && addScopePopover?.open && (
+                    <div 
+                      ref={addScopeRef}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-[#e3e7ea] rounded-lg shadow-[0px_4px_16px_0px_rgba(0,0,0,0.16)] p-2 z-50 min-w-[224px]"
+                    >
+                      <div className="border-b border-[#e3e7ea] pb-3 mb-0">
+                        <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
+                          <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          <input
+                            type="text"
+                            value={scopeSearchValue}
+                            onChange={(e) => setScopeSearchValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Escape') {
+                                setAddScopePopover(null);
+                                setScopeSearchValue('');
+                              }
+                            }}
+                            placeholder="Search"
+                            className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
+                        {getFilteredScopeTypes(scopeSearchValue).map((type) => (
+                          <button
+                            key={type}
+                            onClick={() => addScope(null, type)}
+                            className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
+                          >
+                            <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                              {type}
+                            </p>
+                          </button>
+                        ))}
+                        {getFilteredScopeTypes(scopeSearchValue).length === 0 && (
+                          <div className="w-full p-2 text-center">
+                            <p className="font-normal text-xs text-[#6e8081]">No options found</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              scopeConditions.map((condition) => (
+                <div key={condition.id} className="flex flex-col gap-3 items-start relative shrink-0 w-full">
+                  <div className="border border-[#e3e7ea] rounded-lg flex flex-col items-start relative shrink-0 w-full">
+                    {condition.scopes.map((scope) => (
+                      <div key={scope.id} className="flex gap-2 items-start relative shrink-0 w-full">
+                        <div className="border-b border-[#e3e7ea] flex gap-3 items-start p-3 relative shrink-0 w-full">
+                          <div className="flex gap-1 items-start px-0.5 py-1 rounded shrink-0 w-[200px]">
+                            <p className="font-medium leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px] whitespace-pre">
+                              {scope.type}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2 grow items-start px-0.5 py-1 relative min-h-[24px]">
+                            {scope.tags.map((tag, tagIndex) => (
+                              <div key={tagIndex} className="bg-[#e8ebeb] flex gap-1 h-5 items-center justify-center px-2 py-0.5 rounded shrink-0">
+                                <p className="font-medium leading-4 relative shrink-0 text-[11px] text-[#121313] tracking-[0.11px] whitespace-pre">
+                                  {tag}
+                                </p>
+                                <button 
+                                  onClick={() => removeScopeTag(condition.id, scope.id, tagIndex)}
+                                  className="w-3 h-3 flex items-center justify-center hover:bg-[#d2d8dc] rounded"
+                                >
+                                  <svg className="w-3 h-3 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                            <div className="relative">
+                              <button 
+                                onClick={() => setAddTagPopover({ conditionId: condition.id, scopeId: scope.id, open: true })}
+                                className="w-5 h-5 flex items-center justify-center hover:bg-[#f0f2f2] rounded"
+                              >
+                                <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                              </button>
+                              {addTagPopover?.conditionId === condition.id && addTagPopover?.scopeId === scope.id && addTagPopover?.open && (
+                                <div 
+                                  ref={addTagRef}
+                                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-[#e3e7ea] rounded-lg shadow-[0px_4px_16px_0px_rgba(0,0,0,0.16)] p-2 z-50 min-w-[224px]"
+                                >
+                                  <div className="border-b border-[#e3e7ea] pb-3 mb-0">
+                                    <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
+                                      <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                      </svg>
+                                      <input
+                                        type="text"
+                                        value={tagSearchValue}
+                                        onChange={(e) => setTagSearchValue(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            setAddTagPopover(null);
+                                            setTagSearchValue('');
+                                          } else if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const inputValue = tagSearchValue.trim();
+                                            if (!inputValue) return;
+                                            if (inputValue.includes(',')) {
+                                              addTagsFromCommaSeparated(condition.id, scope.id, inputValue);
+                                            } else {
+                                              const matchingOption = findMatchingOption(scope.type, inputValue);
+                                              if (matchingOption) {
+                                                addTag(condition.id, scope.id, matchingOption);
+                                              }
+                                            }
+                                          }
+                                        }}
+                                        placeholder="Search or paste comma-separated values"
+                                        className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
+                                        autoFocus
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
+                                    {getFilteredOptions(scope.type, tagSearchValue)
+                                      .filter(option => {
+                                        const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+                                        return !existingTagsLower.includes(option.toLowerCase());
+                                      })
+                                      .map((option) => (
+                                        <button
+                                          key={option}
+                                          onClick={() => addTag(condition.id, scope.id, option)}
+                                          className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
+                                        >
+                                          <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                                            {option}
+                                          </p>
+                                        </button>
+                                      ))}
+                                    {getFilteredOptions(scope.type, tagSearchValue).filter(option => {
+                                      const existingTagsLower = scope.tags.map(t => t.toLowerCase());
+                                      return !existingTagsLower.includes(option.toLowerCase());
+                                    }).length === 0 && (
+                                      <div className="w-full p-2 text-center">
+                                        <p className="font-normal text-xs text-[#6e8081]">No options found</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => removeScope(condition.id, scope.id)}
+                          className="w-5 h-5 flex items-center justify-center hover:bg-[#f0f2f2] rounded shrink-0"
+                        >
+                          <svg className="w-4 h-4 text-[#89989b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                    <div className="relative w-full flex justify-center">
+                      <button
+                        onClick={() => setAddScopePopover({ conditionId: condition.id, open: true })}
+                        className="flex flex-col h-8 items-start justify-center overflow-clip relative shrink-0 w-full cursor-pointer hover:bg-[#f7f8f8]"
+                      >
+                        <div className="box-border flex gap-4 items-center justify-center px-3 py-0 relative shrink-0 w-full">
+                          <div className="flex gap-2 grow items-center">
+                            <p className="font-medium leading-4 relative shrink-0 text-[#121313] text-xs tracking-[0.12px]">
+                              Add Scope
+                            </p>
+                          </div>
+                          <div className="flex-none rotate-90">
+                            <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                      {addScopePopover?.conditionId === condition.id && addScopePopover?.open && (
+                        <div 
+                          ref={addScopeRef}
+                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-[#e3e7ea] rounded-lg shadow-[0px_4px_16px_0px_rgba(0,0,0,0.16)] p-2 z-50 min-w-[224px]"
+                        >
+                          <div className="border-b border-[#e3e7ea] pb-3 mb-0">
+                            <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg flex gap-1 h-8 items-center px-3 py-2 relative shrink-0 w-full">
+                              <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                              <input
+                                type="text"
+                                value={scopeSearchValue}
+                                onChange={(e) => setScopeSearchValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Escape') {
+                                    setAddScopePopover(null);
+                                    setScopeSearchValue('');
+                                  }
+                                }}
+                                placeholder="Search"
+                                className="flex-1 bg-transparent font-normal leading-4 text-xs text-[#121313] placeholder:text-[#89989b] tracking-[0.12px] outline-none border-none"
+                                autoFocus
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-[2px] items-start relative shrink-0 max-h-[200px] overflow-y-auto mt-3">
+                            {getFilteredScopeTypes(scopeSearchValue).map((type) => (
+                              <button
+                                key={type}
+                                onClick={() => addScope(condition.id, type)}
+                                className="w-full flex gap-2 items-center p-2 rounded hover:bg-[#f0f2f2] text-left"
+                              >
+                                <p className="font-normal leading-4 relative shrink-0 text-xs text-[#121313] tracking-[0.12px]">
+                                  {type}
+                                </p>
+                              </button>
+                            ))}
+                            {getFilteredScopeTypes(scopeSearchValue).length === 0 && (
+                              <div className="w-full p-2 text-center">
+                                <p className="font-normal text-xs text-[#6e8081]">No options found</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="bg-white border-t border-[#e3e7ea] flex items-center justify-between px-4 py-3 relative shrink-0 w-full">
+          <button
+            onClick={() => {
+              setCustomizeFeaturesOpen(false);
+              setCustomizeFeaturesMemberEmail(null);
+              setScopeConditions([]);
+              setAddScopePopover(null);
+              setAddTagPopover(null);
+              setScopeSearchValue('');
+              setTagSearchValue('');
+            }}
+            className="flex gap-1 h-8 items-center justify-center px-3 py-2 relative rounded shrink-0 hover:bg-[#f0f2f2]"
+          >
+            <svg className="w-4 h-4 text-[#121313]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <p className="font-medium leading-4 relative shrink-0 text-[#121313] text-xs text-center tracking-[0.12px] whitespace-pre">
+              Back
+            </p>
+          </button>
+          <button
+            onClick={() => {
+              setCustomizeFeaturesOpen(false);
+              setCustomizeFeaturesMemberEmail(null);
+              setScopeConditions([]);
+              setAddScopePopover(null);
+              setAddTagPopover(null);
+              setScopeSearchValue('');
+              setTagSearchValue('');
+            }}
+            className="flex gap-2 h-8 items-center justify-center px-3 py-2 relative rounded shrink-0 bg-[#16696d] text-white hover:bg-[#0d5256]"
+          >
+            <p className="font-medium leading-4 relative shrink-0 text-xs text-center tracking-[0.12px] whitespace-pre">
+              Save
+            </p>
+          </button>
+        </div>
+      </>
+    );
+  };
+
+  if (!isOpen) return null;
+
+  if (customizeFeaturesOpen) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-[100]" onClick={() => {
+        setCustomizeFeaturesOpen(false);
+        setCustomizeFeaturesMemberEmail(null);
+      }} style={{ paddingTop: '136px' }}>
+        <div className="bg-white rounded-[8px] shadow-[0px_12px_12px_0px_rgba(0,0,0,0.12)] w-[600px] max-h-[calc(100vh-176px)] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          {renderCustomizeFeaturesModal()}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-[100]" onClick={onClose} style={{ paddingTop: '136px' }}>
