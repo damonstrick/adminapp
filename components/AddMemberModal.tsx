@@ -84,6 +84,9 @@ export default function AddMemberModal({
   const [customizeFeaturesOpen, setCustomizeFeaturesOpen] = useState(false);
   const [customizeFeaturesMemberEmail, setCustomizeFeaturesMemberEmail] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [uiOption, setUiOption] = useState<'option1' | 'option2' | 'option3' | 'option4'>('option1');
+  const [overridePermissionsOpen, setOverridePermissionsOpen] = useState(false);
+  const [overridePermissionsEnabled, setOverridePermissionsEnabled] = useState(false);
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
   const [groupDropdownOpen, setGroupDropdownOpen] = useState(false);
   const groupDropdownRef = useRef<HTMLDivElement>(null);
@@ -211,6 +214,9 @@ export default function AddMemberModal({
       setSelectedGroup(null);
       setGroupSearchQuery('');
       setGroupDropdownOpen(false);
+      setOverridePermissionsOpen(false);
+      setOverridePermissionsEnabled(false);
+      setUiOption('option1');
     }
   }, [isOpen]);
 
@@ -397,7 +403,34 @@ export default function AddMemberModal({
     if (hasExistingMember) return;
     if (emailTags.length === 0) return;
     
-    // Move to step 2
+    // If a group is selected, skip steps 2 and 3 and send invites directly
+    if (selectedGroup) {
+      // Initialize member product roles with default 'None' for all members
+      const defaultRoles: MemberProductRoles[] = emailTags.map(tag => ({
+        email: tag.email,
+        clearContracts: 'None',
+        analyze: 'None',
+        mrfSearch: 'None',
+      }));
+      setMemberProductRoles(defaultRoles);
+      
+      // Send invites immediately
+      handleSendInvitations();
+      return;
+    }
+    
+    // If no group selected, proceed to step 2 for role assignment
+    // Initialize member product roles if not already set
+    if (memberProductRoles.length === 0) {
+      const defaultRoles: MemberProductRoles[] = emailTags.map(tag => ({
+        email: tag.email,
+        clearContracts: 'None',
+        analyze: 'None',
+        mrfSearch: 'None',
+      }));
+      setMemberProductRoles(defaultRoles);
+    }
+    
     setStep(2);
   };
 
@@ -446,21 +479,24 @@ export default function AddMemberModal({
     const newUsers = emailTags.filter(tag => tag.status === 'new-user');
     const existingUsers = emailTags.filter(tag => tag.status === 'existing-user');
     
+    // Build group message if applicable
+    const groupMessage = selectedGroup ? ` to ${selectedGroup.name}` : '';
+    
     // Show appropriate toast messages
     if (existingUsers.length > 0 && newUsers.length > 0) {
       // Both types
       showToast(
-        `${existingUsers.length} existing ${existingUsers.length === 1 ? 'user' : 'users'} added. ${newUsers.length} invite${newUsers.length === 1 ? '' : 's'} sent.`
+        `${existingUsers.length} existing ${existingUsers.length === 1 ? 'user' : 'users'} added${groupMessage}. ${newUsers.length} invite${newUsers.length === 1 ? '' : 's'} sent${groupMessage}.`
       );
     } else if (existingUsers.length > 0) {
       // Only existing users
       showToast(
-        `${existingUsers.length} existing ${existingUsers.length === 1 ? 'user' : 'users'} added.`
+        `${existingUsers.length} existing ${existingUsers.length === 1 ? 'user' : 'users'} added${groupMessage}.`
       );
     } else if (newUsers.length > 0) {
       // Only new users
       showToast(
-        `${newUsers.length} invite${newUsers.length === 1 ? '' : 's'} sent.`
+        `${newUsers.length} invite${newUsers.length === 1 ? '' : 's'} sent${groupMessage}.`
       );
     }
     
@@ -1225,8 +1261,328 @@ export default function AddMemberModal({
 
         {/* Content Container */}
         <div className="bg-white flex flex-col gap-4 items-start px-4 py-4 relative flex-1 min-h-0 w-full">
-          {/* Quick assign to all members - Fixed */}
-          <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4 w-full shrink-0">
+          {/* UI Option Selector - Temporary for testing */}
+          {selectedGroup && (
+            <div className="w-full shrink-0 bg-yellow-50 border border-yellow-200 rounded p-2 mb-2">
+              <label className="text-xs font-medium text-[#121313] mr-2">UI Option:</label>
+              <select 
+                value={uiOption} 
+                onChange={(e) => setUiOption(e.target.value as 'option1' | 'option2' | 'option3' | 'option4')}
+                className="text-xs border border-[#e3e7ea] rounded px-2 py-1"
+              >
+                <option value="option1">Option 1: Collapsible Section</option>
+                <option value="option2">Option 2: Info Banner + De-emphasis</option>
+                <option value="option3">Option 3: Advanced Options</option>
+                <option value="option4">Option 4: Toggle Override</option>
+              </select>
+            </div>
+          )}
+
+          {/* Option 1: Collapsible "Override Permissions" Section */}
+          {selectedGroup && uiOption === 'option1' && (
+            <div className="w-full shrink-0">
+              <div className="border border-[#e3e7ea] rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setOverridePermissionsOpen(!overridePermissionsOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-[#f7f8f8] hover:bg-[#f0f2f2]"
+                >
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-medium text-[#121313]">Override Group Permissions</p>
+                    <span className="text-[10px] text-[#6e8081] bg-white px-2 py-0.5 rounded">Optional</span>
+                    <svg className="w-4 h-4 text-[#6e8081]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <svg className={`w-4 h-4 text-[#121313] transition-transform ${overridePermissionsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {overridePermissionsOpen && (
+                  <div className="px-4 py-3 bg-white border-t border-[#e3e7ea]">
+                    <p className="text-[11px] text-[#6e8081] mb-3">
+                      Members will inherit permissions from <span className="font-medium text-[#121313]">{selectedGroup.name}</span>. Use these settings to override if needed.
+                    </p>
+                    <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4">
+                      <div className="flex flex-col w-full">
+                        <p className="text-xs text-[#6E8081] font-normal mb-3">Quick assign to all members</p>
+                        <div className="flex gap-4 mb-4">
+                          {PRODUCTS.map((product) => {
+                            const getProductIcon = (p: string) => {
+                              if (p === 'Clear Contracts') {
+                                return (
+                                  <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                  </svg>
+                                );
+                              } else if (p === ANALYZE_PRODUCT_NAME) {
+                                return (
+                                  <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                );
+                              } else if (p === MRF_SEARCH_PRODUCT_NAME) {
+                                return (
+                                  <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                );
+                              }
+                              return null;
+                            };
+
+                            return (
+                              <div key={product} className="flex-1 flex flex-col gap-2">
+                                <label className="text-xs text-[#121313] font-normal">{product}</label>
+                                <QuickAssignRoleDropdown product={product} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setCustomizeFeaturesMemberEmail(null);
+                            setCustomizeFeaturesOpen(true);
+                          }}
+                          className="w-full h-8 px-3 py-2 border border-[#e3e7ea] rounded flex items-center justify-center gap-2 bg-white hover:bg-[#f0f2f2]"
+                        >
+                          <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                          </svg>
+                          <p className="text-xs font-medium text-[#121313]">Customize Features</p>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Option 2: Info Banner + Visual De-emphasis */}
+          {selectedGroup && uiOption === 'option2' && (
+            <>
+              <div className="w-full shrink-0 bg-[#e8f4f5] border border-[#16696d] rounded-lg p-3">
+                <div className="flex gap-2 items-start">
+                  <svg className="w-4 h-4 text-[#16696d] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-xs text-[#16696d]">
+                    Members will inherit permissions from <span className="font-medium">{selectedGroup.name}</span>. The settings below are optional and will override group permissions.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4 w-full shrink-0 opacity-60">
+                <div className="flex flex-col w-full">
+                  <p className="text-xs text-[#6E8081] font-normal mb-3">Quick assign to all members</p>
+                  <div className="flex gap-4 mb-4">
+                    {PRODUCTS.map((product) => {
+                      const getProductIcon = (p: string) => {
+                        if (p === 'Clear Contracts') {
+                          return (
+                            <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                          );
+                        } else if (p === ANALYZE_PRODUCT_NAME) {
+                          return (
+                            <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          );
+                        } else if (p === MRF_SEARCH_PRODUCT_NAME) {
+                          return (
+                            <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          );
+                        }
+                        return null;
+                      };
+
+                      return (
+                        <div key={product} className="flex-1 flex flex-col gap-2">
+                          <label className="text-xs text-[#121313] font-normal">{product}</label>
+                          <QuickAssignRoleDropdown product={product} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setCustomizeFeaturesMemberEmail(null);
+                      setCustomizeFeaturesOpen(true);
+                    }}
+                    className="w-full h-8 px-3 py-2 border border-[#e3e7ea] rounded flex items-center justify-center gap-2 bg-white hover:bg-[#f0f2f2]"
+                  >
+                    <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    <p className="text-xs font-medium text-[#121313]">Customize Features</p>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Option 3: Advanced Options (Collapsible) */}
+          {selectedGroup && uiOption === 'option3' && (
+            <div className="w-full shrink-0 border border-[#e3e7ea] rounded-lg overflow-hidden">
+              <button
+                onClick={() => setOverridePermissionsOpen(!overridePermissionsOpen)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-[#f7f8f8] hover:bg-[#f0f2f2]"
+              >
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-medium text-[#121313]">Advanced Options</p>
+                  <span className="text-[10px] text-[#6e8081] bg-white px-2 py-0.5 rounded">Override Permissions</span>
+                </div>
+                <svg className={`w-4 h-4 text-[#121313] transition-transform ${overridePermissionsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {overridePermissionsOpen && (
+                <div className="px-4 py-3 bg-white border-t border-[#e3e7ea]">
+                  <p className="text-[11px] text-[#6e8081] mb-3">
+                    These settings will override the permissions configured for <span className="font-medium text-[#121313]">{selectedGroup.name}</span>.
+                  </p>
+                  <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4">
+                    <div className="flex flex-col w-full">
+                      <p className="text-xs text-[#6E8081] font-normal mb-3">Quick assign to all members</p>
+                      <div className="flex gap-4 mb-4">
+                        {PRODUCTS.map((product) => {
+                          const getProductIcon = (p: string) => {
+                            if (p === 'Clear Contracts') {
+                              return (
+                                <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                              );
+                            } else if (p === ANALYZE_PRODUCT_NAME) {
+                              return (
+                                <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              );
+                            } else if (p === MRF_SEARCH_PRODUCT_NAME) {
+                              return (
+                                <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                              );
+                            }
+                            return null;
+                          };
+
+                          return (
+                            <div key={product} className="flex-1 flex flex-col gap-2">
+                              <label className="text-xs text-[#121313] font-normal">{product}</label>
+                              <QuickAssignRoleDropdown product={product} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setCustomizeFeaturesMemberEmail(null);
+                          setCustomizeFeaturesOpen(true);
+                        }}
+                        className="w-full h-8 px-3 py-2 border border-[#e3e7ea] rounded flex items-center justify-center gap-2 bg-white hover:bg-[#f0f2f2]"
+                      >
+                        <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        <p className="text-xs font-medium text-[#121313]">Customize Features</p>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Option 4: Toggle Override */}
+          {selectedGroup && uiOption === 'option4' && (
+            <>
+              <div className="w-full shrink-0 bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={overridePermissionsEnabled}
+                        onChange={(e) => setOverridePermissionsEnabled(e.target.checked)}
+                      />
+                      <div className="w-9 h-5 bg-[#e3e7ea] peer-focus:outline-none rounded-full peer peer-checked:bg-[#16696d] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                    </label>
+                    <p className="text-xs font-medium text-[#121313]">Override group permissions</p>
+                  </div>
+                </div>
+                <p className="text-[11px] text-[#6e8081]">
+                  By default, members inherit permissions from <span className="font-medium text-[#121313]">{selectedGroup.name}</span>. Enable this to set custom permissions.
+                </p>
+              </div>
+              {overridePermissionsEnabled && (
+                <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4 w-full shrink-0">
+                  <div className="flex flex-col w-full">
+                    <p className="text-xs text-[#6E8081] font-normal mb-3">Quick assign to all members</p>
+                    <div className="flex gap-4 mb-4">
+                      {PRODUCTS.map((product) => {
+                        const getProductIcon = (p: string) => {
+                          if (p === 'Clear Contracts') {
+                            return (
+                              <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                              </svg>
+                            );
+                          } else if (p === ANALYZE_PRODUCT_NAME) {
+                            return (
+                              <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            );
+                          } else if (p === MRF_SEARCH_PRODUCT_NAME) {
+                            return (
+                              <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            );
+                          }
+                          return null;
+                        };
+
+                        return (
+                          <div key={product} className="flex-1 flex flex-col gap-2">
+                            <label className="text-xs text-[#121313] font-normal">{product}</label>
+                            <QuickAssignRoleDropdown product={product} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setCustomizeFeaturesMemberEmail(null);
+                        setCustomizeFeaturesOpen(true);
+                      }}
+                      className="w-full h-8 px-3 py-2 border border-[#e3e7ea] rounded flex items-center justify-center gap-2 bg-white hover:bg-[#f0f2f2]"
+                    >
+                      <svg className="w-4 h-4 text-[#4b595c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                      </svg>
+                      <p className="text-xs font-medium text-[#121313]">Customize Features</p>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Original Quick assign section - shown when no group selected */}
+          {!selectedGroup && (
+            <div className="bg-[#f7f8f8] border border-[#e3e7ea] rounded-lg p-4 w-full shrink-0">
             <div className="flex flex-col w-full">
               <p className="text-xs text-[#6E8081] font-normal mb-3">Quick assign to all members</p>
               <div className="flex gap-4 mb-4">
@@ -1277,6 +1633,7 @@ export default function AddMemberModal({
               </button>
             </div>
           </div>
+          )}
 
           {/* Search - Fixed */}
           <div className="w-full shrink-0">
